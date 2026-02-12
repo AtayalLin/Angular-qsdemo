@@ -29,7 +29,7 @@ export class SurveyListComponent implements OnInit {
   // --- 彈窗相關變數 ---
   showLoginModal = false;
   showPassword = false; // [新增] 控制密碼顯示/隱藏的狀態
-  
+
   loginForm = {
     account: '',
     password: '',
@@ -47,7 +47,7 @@ export class SurveyListComponent implements OnInit {
     }
 
     // 3. 監聽 URL 參數
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['login'] === 'true') {
         this.openLoginModal();
       }
@@ -57,15 +57,97 @@ export class SurveyListComponent implements OnInit {
   fetchSurveys(): void {
     // 模擬資料 (保持不變)
     const tempSurveys: Survey[] = [
-      { id: 1, title: 'iHome 第514代使用者滿意度調查', type: '滿意度', startDate: '2175-11-23', endDate: '2175-12-23', participants: 120, publishStatus: '已發佈', questions: [] },
-      { id: 2, title: 'iHome 新功能回饋意見', type: '問卷', startDate: '2175-07-08', endDate: '2175-09-15', participants: 45, publishStatus: '已發佈', questions: [] },
-      { id: 3, title: '鄉里活動中心活動選拔投票', type: '活動', startDate: '2024-09-11', endDate: '2024-09-31', participants: 85, publishStatus: '已發佈', questions: [] },
-      { id: 4, title: '「第24屆天下第一武道大會場地」各家建商標案', type: '回饋', startDate: '767-04-25', endDate: '767-05-01', participants: 77, publishStatus: '草稿', questions: [] },
-      { id: 5, title: '鬼殺隊巡邏滿意度調查', type: '滿意度', startDate: '1918-1-14', endDate: '1918-2-14', participants: 200, publishStatus: '已儲存尚未發佈', questions: [] },
-      { id: 6, title: '87世紀遊戲主機／平台市場調查', type: '市場調查', startDate: '8033-11-25', endDate: '8033-12-31', participants: 1200, publishStatus: '已發佈', questions: [] },
+      {
+        id: 1,
+        title: 'iHome 第514代使用者滿意度調查',
+        type: '滿意度',
+        startDate: '2175-11-23',
+        endDate: '2175-12-23',
+        participants: 120,
+        publishStatus: '已發佈',
+        questions: [],
+      },
+      {
+        id: 2,
+        title: 'iHome 新功能回饋意見',
+        type: '問卷',
+        startDate: '2175-07-08',
+        endDate: '2175-09-15',
+        participants: 45,
+        publishStatus: '已發佈',
+        questions: [],
+      },
+      {
+        id: 3,
+        title: '鄉里活動中心活動選拔投票',
+        type: '活動',
+        startDate: '2024-09-11',
+        endDate: '2024-09-31',
+        participants: 85,
+        publishStatus: '已發佈',
+        questions: [],
+      },
+      {
+        id: 4,
+        title: '「第24屆天下第一武道大會場地」各家建商標案',
+        type: '回饋',
+        startDate: '767-04-25',
+        endDate: '767-05-01',
+        participants: 77,
+        publishStatus: '草稿',
+        questions: [],
+      },
+      {
+        id: 5,
+        title: '鬼殺隊巡邏滿意度調查',
+        type: '滿意度',
+        startDate: '1918-1-14',
+        endDate: '1918-2-14',
+        participants: 200,
+        publishStatus: '已儲存尚未發佈',
+        questions: [],
+      },
+      {
+        id: 6,
+        title: '87世紀遊戲主機／平台市場調查',
+        type: '市場調查',
+        startDate: '8033-11-25',
+        endDate: '8033-12-31',
+        participants: 1200,
+        publishStatus: '已發佈',
+        // [新增] 為了讓測試有題目可以存入，我們這裡手動補上幾題
+        questions: [
+          {
+            id: 1,
+            title: '最常使用的平台？',
+            type: 'single',
+            options: ['PS5', 'PC', 'Switch'],
+          },
+          { id: 2, title: '建議回饋', type: 'text' },
+        ],
+      },
     ];
     this.surveys = tempSurveys;
     this.onSearch();
+  }
+
+  onImportTestData(): void {
+    if (!confirm('是否將假資料「87世紀遊戲主機」導入 MySQL 資料庫？')) return;
+
+    this.surveyService.importMockDataToDatabase().subscribe({
+      next: (res: any) => {
+        console.log('後端回應:', res);
+        if (res.code === 200) {
+          alert('資料導入成功！請檢查 MySQL 資料庫。');
+        } else {
+          alert('導入失敗，後端訊息：' + res.message);
+        }
+      },
+      error: (err) => {
+        console.error('HTTP 錯誤:', err);
+        alert('連線失敗，請確認 Eclipse 是否已啟動伺服器 (8080)。');
+      },
+    });
   }
 
   getDisplayStatus(status: string): string {
@@ -78,7 +160,8 @@ export class SurveyListComponent implements OnInit {
     this.filteredSurveys = this.surveys.filter((s) => {
       const matchText = !keyword || s.title.toLowerCase().includes(keyword);
       const matchType = this.searchType === '' || s.type === this.searchType;
-      const matchStatus = this.searchStatus === '' || s.publishStatus === this.searchStatus;
+      const matchStatus =
+        this.searchStatus === '' || s.publishStatus === this.searchStatus;
       return matchText && matchType && matchStatus;
     });
   }
@@ -137,9 +220,13 @@ export class SurveyListComponent implements OnInit {
   }
 
   handleLogin() {
-    const storedUsers = JSON.parse(localStorage.getItem('survey_users') || '[]');
-    const user = storedUsers.find((u: any) => 
-      u.account === this.loginForm.account && u.password === this.loginForm.password
+    const storedUsers = JSON.parse(
+      localStorage.getItem('survey_users') || '[]',
+    );
+    const user = storedUsers.find(
+      (u: any) =>
+        u.account === this.loginForm.account &&
+        u.password === this.loginForm.password,
     );
 
     if (user) {

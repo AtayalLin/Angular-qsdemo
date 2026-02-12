@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
 export interface Question {
   id: number;
   title: string;
-  type: 'single' | 'multiple' | 'text';
+  type: 'single' | 'multiple' | 'text'; // 前端介面依然維持 multiple 以利閱讀
   options?: string[];
-  cssClass?: string; // 用來保存你原本 HTML 裡的特定顏色 Class
+  cssClass?: string;
 }
 
 export interface Survey {
@@ -17,19 +18,17 @@ export interface Survey {
   endDate: string;
   participants: number;
   publishStatus: '已發佈' | '已儲存尚未發佈' | '草稿';
-  questions?: Question[]; // 新增題目陣列
+  questions?: Question[];
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class SurveyService {
+  constructor(private http: HttpClient) {}
+
   private surveySubmission = {
-    userInfo: {
-      name: '',
-      phone: '',
-      email: '',
-    },
+    userInfo: { name: '', phone: '', email: '' },
     answers: [],
   };
 
@@ -41,13 +40,12 @@ export class SurveyService {
   }
 
   private surveys: Survey[] = [
-    // ... 前面 1-5 筆保持不變
     {
       id: 6,
       title: '87世紀遊戲主機／平台市場調查',
       type: '市場調查',
-      startDate: '8033-11-25',
-      endDate: '8033-12-31',
+      startDate: '2026-02-15',
+      endDate: '2026-12-31',
       participants: 1200,
       publishStatus: '已發佈',
       questions: [
@@ -59,19 +57,19 @@ export class SurveyService {
             'PlayStation 系列',
             'Xbox 系列',
             'Nintendo Switch 1、2',
-            'PC (桌上型/筆記型)',
-            '行動裝置 (iOS/Android)',
+            'PC',
+            '行動裝置',
           ],
         },
         {
           id: 2,
           title: '您選擇遊戲平台時重視哪些因素？（可複選）',
-          type: 'multiple',
+          type: 'multiple', // 這裡維持 multiple，映射邏輯寫在下方方法中
           options: [
             '遊戲陣容與獨佔作品',
             '主機效能與畫面表現',
             '訂閱制服務 (如 Game Pass)',
-            '周邊硬體與擴充支援性',
+            '周邊硬體',
           ],
         },
         {
@@ -83,19 +81,14 @@ export class SurveyService {
             '視價格與內容而定',
             '目前已擁有相關設備',
             '暫時沒有興趣',
-            '完全不考慮 (容易暈眩/不便)',
+            '完全不考慮',
           ],
         },
         {
           id: 4,
           title: '您最常遊玩的遊戲類型為？（可複選）',
           type: 'multiple',
-          options: [
-            '動作冒險',
-            '角色扮演（RPG）',
-            '第一人稱射擊 / 電競競技',
-            '模擬經營 / 策略益智',
-          ],
+          options: ['動作冒險', '角色扮演（RPG）', '第一人稱射擊', '模擬經營'],
         },
         {
           id: 5,
@@ -106,6 +99,34 @@ export class SurveyService {
     },
   ];
 
+  /**
+   * [修正版] 格式化並發送至後端
+   */
+  importMockDataToDatabase(): Observable<any> {
+    const apiURL = 'http://localhost:8080/quiz/create';
+    const mockSurvey = this.surveys[0];
+
+    const payload = {
+      title: mockSurvey.title,
+      description: mockSurvey.type,
+      startDate: mockSurvey.startDate,
+      endDate: mockSurvey.endDate,
+      is_published: mockSurvey.publishStatus === '已發佈',
+      questionsList: mockSurvey.questions?.map((q) => ({
+        question_id: q.id,
+        question: q.title,
+        // --- 重點修正：對齊後端 Type 期待的字串 ---
+        // 如果前端是 'multiple'，則轉為後端通常期待的 'multi'
+        type: q.type === 'multiple' ? 'multi' : q.type,
+        is_required: true,
+        options: q.options ? q.options.join(';') : '',
+      })),
+    };
+
+    console.log('修正後準備送出的 JSON:', payload);
+    return this.http.post(apiURL, payload);
+  }
+
   getSurveys(): Observable<Survey[]> {
     return of(this.surveys);
   }
@@ -114,34 +135,3 @@ export class SurveyService {
     return of(found);
   }
 }
-
-// ---參考用，為後端串接
-// export class SurveyService {
-//   private currentAnswers: any = {}; // 暫存使用者在問題頁選的答案
-
-//   constructor(private http: HttpClient) {}
-
-//   // 1. 給列表頁用
-//   getSurveys() {
-//     return this.http.get('/api/surveys');
-//   }
-
-//   // 2. 給問題頁用
-//   getSurveyDetail(id: string) {
-//     return this.http.get(`/api/surveys/${id}`);
-//   }
-
-//   // 3. 暫存/讀取預覽答案 (純前端交換)
-//   saveTempAnswers(answers: any) { this.currentAnswers = answers; }
-//   getTempAnswers() { return this.currentAnswers; }
-
-//   // 4. 給預覽頁最後送出用
-//   postFinalAnswers(payload: any) {
-//     return this.http.post('/api/responses', payload);
-//   }
-
-//   // 5. 給結果頁看統計用
-//   getStatistics(id: string) {
-//     return this.http.get(`/api/surveys/${id}/stats`);
-//   }
-// }

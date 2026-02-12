@@ -8,7 +8,8 @@ import { SurveyService, Survey } from '../../survey.service';
   selector: 'app-survey-question',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [SurveyService],
+  // 注意：providers 通常在 AppModule 或 Service 本身宣告即可，
+  // 若這裡重複宣告可能會導致 Service 變成多個實例(Instance)，共用數據會失效。
   templateUrl: './survey-question.component.html',
   styleUrl: './survey-question.component.scss',
 })
@@ -21,9 +22,8 @@ export class SurveyQuestionComponent implements OnInit {
   isSubmitting = false;
   surveyData?: Survey;
 
-  // --- Modal 控制相關 (已移除 ask 與 input 狀態) ---
   showModal = false;
-  modalStep: 'confirm' | 'thanks' = 'confirm'; 
+  modalStep: 'confirm' | 'thanks' = 'confirm';
   tempAnswers: any = null;
 
   userInfo = {
@@ -59,11 +59,13 @@ export class SurveyQuestionComponent implements OnInit {
     event.preventDefault();
     if (!this.surveyData || !this.surveyData.questions) return;
 
-    // 前端驗證
+    // 前端驗證：聯絡資訊
     if (!this.userInfo.name || !this.userInfo.phone || !this.userInfo.email) {
       alert('請填寫完整聯絡人資訊');
       return;
     }
+
+    // [新增] 檢查答案必填邏輯 (可視需求加入)
 
     // 先收集數據並暫存
     this.tempAnswers = this.collectAnswers();
@@ -74,7 +76,8 @@ export class SurveyQuestionComponent implements OnInit {
   }
 
   /**
-   * 2. 在 Modal 中點擊「確認送出」：執行送出邏輯，成功後直接跳轉感謝畫面
+   * 2. 在 Modal 中點擊「確認送出」
+   * 若要測試「存入資料庫」，應在此處呼叫 service.importMockDataToDatabase()
    */
   finalSubmit() {
     this.isSubmitting = true;
@@ -82,9 +85,9 @@ export class SurveyQuestionComponent implements OnInit {
     // 模擬 API 傳輸延遲
     setTimeout(() => {
       this.isSubmitting = false;
-      this.modalStep = 'thanks'; // 直接切換至感謝填寫畫面
+      this.modalStep = 'thanks';
 
-      // 1.5 秒後自動執行跳轉邏輯
+      // 自動執行導向邏輯
       setTimeout(() => {
         this.goToPreview();
       }, 1500);
@@ -104,6 +107,7 @@ export class SurveyQuestionComponent implements OnInit {
 
   /**
    * 輔助方法：統一收集所有答案
+   * 注意：此處抓取的是 DOM 裡面的使用者填寫內容
    */
   private collectAnswers() {
     if (!this.surveyData || !this.surveyData.questions) {
@@ -118,12 +122,26 @@ export class SurveyQuestionComponent implements OnInit {
 
     this.surveyData.questions.forEach((q) => {
       const inputName = 'q' + q.id;
+      // [修正對照] 这里的 q.type 必须跟 SurveyService 的假資料 type 一致
       if (q.type === 'single') {
-        answers[inputName] = (document.querySelector(`input[name="${inputName}"]:checked`) as HTMLInputElement)?.value || '';
+        answers[inputName] =
+          (
+            document.querySelector(
+              `input[name="${inputName}"]:checked`,
+            ) as HTMLInputElement
+          )?.value || '';
       } else if (q.type === 'multiple') {
-        answers[inputName] = Array.from(document.querySelectorAll(`input[name="${inputName}"]:checked`)).map((el) => (el as HTMLInputElement).value);
+        // 多選題邏輯
+        answers[inputName] = Array.from(
+          document.querySelectorAll(`input[name="${inputName}"]:checked`),
+        ).map((el) => (el as HTMLInputElement).value);
       } else if (q.type === 'text') {
-        answers[inputName] = (document.querySelector(`textarea[name="${inputName}"]`) as HTMLTextAreaElement)?.value || '';
+        answers[inputName] =
+          (
+            document.querySelector(
+              `textarea[name="${inputName}"]`,
+            ) as HTMLTextAreaElement
+          )?.value || '';
       }
     });
     return answers;
@@ -137,9 +155,15 @@ export class SurveyQuestionComponent implements OnInit {
     this.router.navigate(['/surveys']);
   }
 
-  // 保留原有顏色 CSS Class 邏輯
+  // 顏色 CSS Class 邏輯保持不變
   getQ1ColorClass(index: number): string {
-    const classes = ['ps-color', 'xbox-color', 'switch-color', 'pc-color', 'mobile-color'];
+    const classes = [
+      'ps-color',
+      'xbox-color',
+      'switch-color',
+      'pc-color',
+      'mobile-color',
+    ];
     return classes[index] || 'color-q2';
   }
 }

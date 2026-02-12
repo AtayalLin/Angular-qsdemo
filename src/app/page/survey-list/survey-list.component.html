@@ -1,132 +1,165 @@
 <div class="bg-wave"></div>
 
 <div class="survey-wrapper">
-   <button class="login-btn" (click)="isAdmin ? logout() : openLoginModal()">
-    {{ isAdmin ? '登出後台 (切換使用者)' : '登入後台' }}
-</button>
+  <button class="login-btn" (click)="isAdmin ? logout() : openLoginModal()">
+    {{ isAdmin ? "登出後台 (切換使用者)" : "登入後台" }}
+  </button>
 
-@if (showLoginModal) {
-<div class="modal-overlay" (click)="closeLoginModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>管理員登入</h2>
-      <button class="close-x" (click)="closeLoginModal()">&times;</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="input-group">
-        <label>帳號 Account</label>
-        <input type="text" [(ngModel)]="loginForm.account" placeholder="請輸入帳號" />
-      </div>
-
-      <div class="input-group">
-        <label>密碼 Password</label>
-        <div class="password-wrapper">
-          <input 
-            [type]="showPassword ? 'text' : 'password'" 
-            [(ngModel)]="loginForm.password" 
-            placeholder="請輸入密碼" 
-          />
-          <button type="button" class="toggle-eye" (click)="togglePasswordVisibility()">
-            <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-main" (click)="handleLogin()">登入後台</button>
-      <div class="footer-sub-btns">
-        <button class="btn-link" (click)="forgotPassword()">忘記密碼？</button>
-        <button class="btn-link" (click)="registerAdmin()">註冊管理員</button>
-      </div>
-    </div>
-  </div>
-</div>
-}
-
-    <div class="search-filters">
-        <input 
-            type="text" 
-            placeholder="搜尋問卷名稱..." 
-            [(ngModel)]="searchText" 
-            (input)="onSearch()" 
-        />
-        
-        <select [(ngModel)]="searchType" (change)="onSearch()">
-            <option value="">全部類型</option>
-            <option value="滿意度">滿意度</option>
-            <option value="市場調查">市場調查</option>
-            <option value="回饋">回饋</option>
-            <option value="活動">活動</option>
-            <option value="問卷">問卷</option>
-        </select>
-
-        <select [(ngModel)]="searchStatus" (change)="onSearch()">
-            <option value="">全部狀態</option>
-            <option value="已發佈">已發佈</option>
-            @if (isAdmin) {
-                <option value="已儲存尚未發佈">已儲存尚未發佈</option>
-                <option value="草稿">草稿</option>
-            } @else {
-                <option value="已儲存尚未發佈">未開放填寫</option>
-                <option value="草稿">未開放填寫</option>
-            }
-        </select>
-        
-        <button (click)="onSearch()">搜尋</button>
-    </div>
-
-    <div class="survey-list">
-        <div class="survey-header">
-            <div class="col id">編號</div>
-            <div class="col title">名稱</div>
-            <div class="col type">問卷類型</div>
-            <div class="col start">開始時間</div>
-            <div class="col end">結束時間</div>
-            <div class="col participants">填答人數</div>
-            <div class="col status">發布狀態</div>
-            <div class="col action">操作</div>
+  @if (showLoginModal) {
+    <div class="modal-overlay" (click)="closeLoginModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>管理員登入</h2>
+          <button class="close-x" (click)="closeLoginModal()">&times;</button>
         </div>
 
-        @for (survey of filteredSurveys; track survey.id) {
-            <div class="survey-row">
-                <div class="col id">{{ $index + 1 }}</div>
-                
-                <div class="col title">{{ survey.title }}</div>
-                <div class="col type">{{ survey.type }}</div>
-                <div class="col start">{{ survey.startDate }}</div>
-                <div class="col end">{{ survey.endDate }}</div>
-                <div class="col participants">{{ survey.participants }}</div>
-                
-                <div 
-                    class="col status" 
-                    [ngClass]="{
-                        'status-active': survey.publishStatus === '已發佈',
-                        'status-closed': survey.publishStatus !== '已發佈'
-                    }">
-                    {{ getDisplayStatus(survey.publishStatus) }}
-                </div>
+        <div class="modal-body">
+          <div class="input-group">
+            <label>帳號 Account</label>
+            <input
+              type="text"
+              [(ngModel)]="loginForm.account"
+              placeholder="請輸入帳號"
+            />
+          </div>
 
-                <div class="col action">
-                    @if (survey.publishStatus === '已發佈') {
-                        <button class="btn-primary" (click)="startSurvey(survey.id)">開始填寫</button>
-                        <button class="btn-secondary" [routerLink]="['/surveys', survey.id, 'result']">查看結果</button>
-                    }
-
-                    @if (isAdmin) {
-                        @if (survey.publishStatus !== '已發佈') {
-                            <button class="btn-publish" (click)="publishSurvey(survey.id)">發佈</button>
-                        }
-                        <button class="btn-edit" (click)="editSurvey(survey.id)">編輯</button>
-                        <button class="btn-delete" (click)="deleteSurvey(survey.id)">刪除</button>
-                    }
-
-                    @if (!isAdmin && survey.publishStatus !== '已發佈') {
-                        <span style="color: #bbb; font-size: 0.8rem;">暫無開放</span>
-                    }
-                </div>
+          <div class="input-group">
+            <label>密碼 Password</label>
+            <div class="password-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="loginForm.password"
+                placeholder="請輸入密碼"
+              />
+              <button
+                type="button"
+                class="toggle-eye"
+                (click)="togglePasswordVisibility()"
+              >
+                <i
+                  class="fas"
+                  [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
             </div>
-        }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-main" (click)="handleLogin()">登入後台</button>
+          <div class="footer-sub-btns">
+            <button class="btn-link" (click)="forgotPassword()">
+              忘記密碼？
+            </button>
+            <button class="btn-link" (click)="registerAdmin()">
+              註冊管理員
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+  }
+
+  <div class="search-filters">
+    <input
+      type="text"
+      placeholder="搜尋問卷名稱..."
+      [(ngModel)]="searchText"
+      (input)="onSearch()"
+    />
+
+    <select [(ngModel)]="searchType" (change)="onSearch()">
+      <option value="">全部類型</option>
+      <option value="滿意度">滿意度</option>
+      <option value="市場調查">市場調查</option>
+      <option value="回饋">回饋</option>
+      <option value="活動">活動</option>
+      <option value="問卷">問卷</option>
+    </select>
+
+    <select [(ngModel)]="searchStatus" (change)="onSearch()">
+      <option value="">全部狀態</option>
+      <option value="已發佈">已發佈</option>
+      @if (isAdmin) {
+        <option value="已儲存尚未發佈">已儲存尚未發佈</option>
+        <option value="草稿">草稿</option>
+      } @else {
+        <option value="已儲存尚未發佈">未開放填寫</option>
+        <option value="草稿">未開放填寫</option>
+      }
+    </select>
+
+    <button class="btn btn-warning" (click)="onImportTestData()">
+      一鍵導入假資料到 MySQL
+    </button>
+
+    <button (click)="onSearch()">搜尋</button>
+  </div>
+
+  <div class="survey-list">
+    <div class="survey-header">
+      <div class="col id">編號</div>
+      <div class="col title">名稱</div>
+      <div class="col type">問卷類型</div>
+      <div class="col start">開始時間</div>
+      <div class="col end">結束時間</div>
+      <div class="col participants">填答人數</div>
+      <div class="col status">發布狀態</div>
+      <div class="col action">操作</div>
+    </div>
+
+    @for (survey of filteredSurveys; track survey.id) {
+      <div class="survey-row">
+        <div class="col id">{{ $index + 1 }}</div>
+
+        <div class="col title">{{ survey.title }}</div>
+        <div class="col type">{{ survey.type }}</div>
+        <div class="col start">{{ survey.startDate }}</div>
+        <div class="col end">{{ survey.endDate }}</div>
+        <div class="col participants">{{ survey.participants }}</div>
+
+        <div
+          class="col status"
+          [ngClass]="{
+            'status-active': survey.publishStatus === '已發佈',
+            'status-closed': survey.publishStatus !== '已發佈',
+          }"
+        >
+          {{ getDisplayStatus(survey.publishStatus) }}
+        </div>
+
+        <div class="col action">
+          @if (survey.publishStatus === "已發佈") {
+            <button class="btn-primary" (click)="startSurvey(survey.id)">
+              開始填寫
+            </button>
+            <button
+              class="btn-secondary"
+              [routerLink]="['/surveys', survey.id, 'result']"
+            >
+              查看結果
+            </button>
+          }
+
+          @if (isAdmin) {
+            @if (survey.publishStatus !== "已發佈") {
+              <button class="btn-publish" (click)="publishSurvey(survey.id)">
+                發佈
+              </button>
+            }
+            <button class="btn-edit" (click)="editSurvey(survey.id)">
+              編輯
+            </button>
+            <button class="btn-delete" (click)="deleteSurvey(survey.id)">
+              刪除
+            </button>
+          }
+
+          @if (!isAdmin && survey.publishStatus !== "已發佈") {
+            <span style="color: #bbb; font-size: 0.8rem">暫無開放</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </div>
