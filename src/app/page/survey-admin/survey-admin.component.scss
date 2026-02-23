@@ -1,0 +1,218 @@
+/* ============================================================
+   問卷管理中心 - 全面復刻 Survey-List 樣式規範
+   功用：提供專業、一致且美觀的後台管理介面
+============================================================ */
+
+/* 1. 全螢幕背景 (與列表頁一致) */
+.bg-wave {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #ffe6d8 0%, #ffd3c0 50%, #ffbfa0 100%);
+  overflow: hidden;
+  z-index: -1;
+}
+
+/* 2. 主容器 (與 .survey-wrapper 一致) */
+.survey-wrapper {
+  max-width: 1100px;
+  margin: 60px auto;
+  padding: 40px;
+  background: rgba(255, 248, 240, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  font-family: 'Noto Sans JP', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* 3. 標題列佈局 */
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f4a261;
+
+  .title-group {
+    h1 {
+      margin: 0;
+      color: #6d4c41;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+    .breadcrumb {
+      font-size: 0.85rem;
+      color: #b08a74;
+      margin-top: 4px;
+      display: block;
+    }
+  }
+}
+
+/* 4. 返回按鈕 (套用列表頁 login-btn 樣式) */
+.btn-back {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(135deg, #f4a261, #e76f51);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25);
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
+  }
+}
+
+/* 5. 導覽切換列 (套用 search-filters 毛玻璃樣式) */
+.admin-nav-bar {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  margin-bottom: 32px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+
+  button {
+    height: 38px;
+    padding: 0 24px;
+    border-radius: 8px;
+    border: 1px solid #f0c4a8;
+    background-color: #fffaf6;
+    color: #6d4c41;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #ffbfa0;
+    }
+
+    &.active {
+      background-color: #f4a261;
+      color: #ffffff;
+      border-color: #f4a261;
+      box-shadow: 0 4px 10px rgba(244, 162, 97, 0.25);
+    }
+  }
+}
+
+/* 6. 內容主卡片 (專業切板) */
+.admin-main-card {
+  background: #ffffff;
+  border-radius: 15px;
+  min-height: 500px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  border: 1px solid #f0c4a8;
+  overflow: hidden;
+}
+
+.admin-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 面板內部的 Header */
+.pane-header {
+  padding: 20px 30px;
+  background: #fffaf6;
+  border-bottom: 1px solid #f0c4a8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #6d4c41;
+    position: relative;
+    padding-left: 12px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 18px;
+      background: #e76f51;
+      border-radius: 2px;
+    }
+  }
+}
+
+/* 面板內部的 Body */
+.pane-body {
+  padding: 30px;
+  color: #6d4c41;
+}
+
+/* 按鈕樣式 (對齊列表頁 action 按鈕) */
+.btn-save, .btn-add-quest {
+  height: 34px;
+  padding: 0 20px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save {
+  background-color: #2a9d8f;
+  color: #fff;
+}
+
+.btn-add-quest {
+  background-color: #f4a261;
+  color: #fff;
+}
+
+.btn-save:hover, .btn-add-quest:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* 空狀態樣式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  text-align: center;
+  color: #b08a74;
+
+  .icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    margin: 0 0 10px 0;
+    color: #6d4c41;
+  }
+}
+
+/* 預留內容裝飾框 */
+.placeholder-content {
+  margin-top: 20px;
+  height: 200px;
+  background: #fffaf6;
+  border: 2px dashed #f0c4a8;
+  border-radius: 10px;
+}

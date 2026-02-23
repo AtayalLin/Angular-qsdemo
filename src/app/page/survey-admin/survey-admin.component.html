@@ -1,0 +1,93 @@
+<div class="bg-wave"></div>
+
+<div class="survey-wrapper">
+  <!-- 頂部標題與返回按鈕區 -->
+  <div class="admin-header-row">
+    <div class="title-group">
+      <h1>問卷管理中心</h1>
+      <span class="breadcrumb">首頁 / 管理後台</span>
+    </div>
+    <div class="top-actions">
+      <button class="btn-back" [routerLink]="['/surveys']">
+        <i class="fas fa-chevron-left"></i> 返回問卷列表
+      </button>
+    </div>
+  </div>
+
+  <!-- 導覽切換列 (完全套用 search-filters 樣式) -->
+  <div class="admin-nav-bar">
+    <button [class.active]="activeTab === 'survey'" (click)="switchTab('survey')">
+      問卷設定
+    </button>
+    <button [class.active]="activeTab === 'questions'" (click)="switchTab('questions')">
+      題目編輯
+    </button>
+    <button [class.active]="activeTab === 'feedback'" (click)="switchTab('feedback')">
+      問卷回饋
+    </button>
+    <button [class.active]="activeTab === 'stats'" (click)="switchTab('stats')">
+      統計分析
+    </button>
+  </div>
+
+  <!-- 內容顯示容器 (切板主體) -->
+  <div class="admin-main-card">
+    
+    <!-- 1. 問卷設定區 -->
+    @if (activeTab === 'survey') {
+      <div class="admin-pane">
+        <div class="pane-header">
+          <h2>問卷基本設定</h2>
+          <div class="pane-actions">
+            <button class="btn-save">儲存設定</button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <div class="mock-form">
+            <p>此處將依照您的 SCSS 規範放置問卷名稱、說明等輸入欄位...</p>
+            <div class="placeholder-content"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- 2. 題目編輯區 -->
+    @if (activeTab === 'questions') {
+      <div class="admin-pane">
+        <div class="pane-header">
+          <h2>題目編輯管理</h2>
+          <div class="pane-actions">
+            <button class="btn-add-quest">+ 新增題目</button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <p>此處將實作與 05-06.png 一致的題目列表與編輯邏輯。</p>
+          <div class="placeholder-content"></div>
+        </div>
+      </div>
+    }
+
+    <!-- 3. 問卷回饋區 -->
+    @if (activeTab === 'feedback') {
+      <div class="admin-pane">
+        <div class="empty-state">
+          <div class="icon">📝</div>
+          <h3>問卷回饋數據</h3>
+          <p>目前尚未串接後端 API，回饋資料載入中...</p>
+        </div>
+      </div>
+    }
+
+    <!-- 4. 統計區 -->
+    @if (activeTab === 'stats') {
+      <div class="admin-pane">
+        <div class="empty-state">
+          <div class="icon">📊</div>
+          <h3>問卷統計圖表</h3>
+          <p>視覺化統計功能開發中，待後端完成後啟用。</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

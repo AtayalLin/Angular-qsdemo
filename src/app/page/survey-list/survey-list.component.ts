@@ -22,9 +22,68 @@ export class SurveyListComponent implements OnInit {
   searchText = '';
   searchType = '';
   searchStatus = '';
+  startDate = ''; // [新增] 搜尋開始日期
+  endDate = '';   // [新增] 搜尋結束日期
+
+  // --- 分頁相關變數 ---
+  currentPage = 1;  // 當前頁碼
+  pageSize = 10;    // 每頁顯示筆數
 
   surveys: Survey[] = [];
   filteredSurveys: Survey[] = [];
+
+  /**
+   * 取得當前分頁後的問卷列表
+   * 功用：根據當前頁碼與每頁筆數，從過濾後的列表中切分出顯示區塊。
+   */
+  get paginatedSurveys() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const items = this.filteredSurveys.slice(startIndex, startIndex + this.pageSize);
+    return items;
+  }
+
+  /**
+   * 計算總頁數 (實際有資料的頁數)
+   */
+  get actualTotalPages(): number {
+    return Math.ceil(this.filteredSurveys.length / this.pageSize) || 1;
+  }
+
+  /**
+   * 導航用的最大頁數 (至少顯示 10 頁)
+   * 功用：確保使用者可以看見 1-10 頁標籤，若實際資料超過則隨之增加。
+   */
+  get navMaxPage(): number {
+    return Math.max(10, this.actualTotalPages);
+  }
+
+  /**
+   * 產生頁碼陣列 (固定顯示 10 個頁籤的窗口)
+   * 功用：根據當前頁碼計算出應顯示的 10 個頁碼範圍。
+   */
+  get pageNumbers(): number[] {
+    // 計算當前 10 頁窗口的起始頁
+    const windowSize = 10;
+    const startPage = Math.floor((this.currentPage - 1) / windowSize) * windowSize + 1;
+    
+    // 計算結束頁 (至少到 10，或根據 navMaxPage 延伸)
+    const endPage = startPage + windowSize - 1;
+    
+    const pages: number[] = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  /**
+   * 切換頁碼
+   */
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.navMaxPage) {
+      this.currentPage = page;
+    }
+  }
 
   // --- 彈窗相關變數 ---
   showLoginModal = false;
@@ -101,8 +160,8 @@ export class SurveyListComponent implements OnInit {
         id: 5,
         title: '鬼殺隊巡邏滿意度調查',
         type: '滿意度',
-        startDate: '1918-1-14',
-        endDate: '1918-2-14',
+        startDate: '1918-01-14',
+        endDate: '1918-02-14',
         participants: 200,
         publishStatus: '已儲存尚未發佈',
         questions: [],
@@ -111,8 +170,8 @@ export class SurveyListComponent implements OnInit {
         id: 6,
         title: '87世紀遊戲主機／平台市場調查',
         type: '市場調查',
-        startDate: '8033-11-25',
-        endDate: '8033-12-31',
+        startDate: '2026-02-15',
+        endDate: '2026-12-31',
         participants: 1200,
         publishStatus: '已發佈',
         // [新增] 為了讓測試有題目可以存入，我們這裡手動補上幾題
@@ -155,14 +214,32 @@ export class SurveyListComponent implements OnInit {
     return status === '已發佈' ? '已發佈' : '未開放填寫';
   }
 
+  /**
+   * 搜尋問卷方法
+   * 功用：根據關鍵字、類型、狀態、以及日期區間過濾問卷列表。
+   */
   onSearch() {
+    this.currentPage = 1; // 每次搜尋條件變動，重置回第一頁
     const keyword = (this.searchText || '').trim().toLowerCase();
     this.filteredSurveys = this.surveys.filter((s) => {
+      // 1. 關鍵字比對
       const matchText = !keyword || s.title.toLowerCase().includes(keyword);
+      // 2. 類型比對
       const matchType = this.searchType === '' || s.type === this.searchType;
+      // 3. 狀態比對
       const matchStatus =
         this.searchStatus === '' || s.publishStatus === this.searchStatus;
-      return matchText && matchType && matchStatus;
+      
+      // 4. [新增] 日期區間比對：問卷的 startDate 與 endDate 必須落在搜尋區間內
+      let matchDate = true;
+      if (this.startDate) {
+        matchDate = matchDate && s.startDate >= this.startDate;
+      }
+      if (this.endDate) {
+        matchDate = matchDate && s.endDate <= this.endDate;
+      }
+
+      return matchText && matchType && matchStatus && matchDate;
     });
   }
 

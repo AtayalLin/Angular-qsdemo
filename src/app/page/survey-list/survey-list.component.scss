@@ -53,280 +53,143 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
-}
-
-/* 密碼包裝容器 */
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-wrapper input {
-  width: 100%;
-  padding-right: 40px; /* 為圖示留出空間 */
-}
-
-/* 眼睛按鈕樣式 */
-.toggle-eye {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.toggle-eye:hover {
-  color: #333;
-}
-
-/* 確保 FontAwesome 圖示大小適中 */
-.toggle-eye i {
-  font-size: 1.1rem;
-}
-
-/* 延續您原有的 input-group 樣式 (範例) */
-.input-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.input-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
 /* ===============================
-   彈窗遮罩 (修正為與背景一致的模糊感)
+   右上角按鈕組
 ================================ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(109, 76, 65, 0.4); /* 使用深棕色半透明，增加溫暖感 */
-  backdrop-filter: blur(8px);
+.top-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-/* ===============================
-   彈窗主體 (對齊 .survey-wrapper 樣式)
-================================ */
-.modal-content {
-  background: rgba(255, 248, 240, 0.98); /* 與容器一致的底色 */
-  padding: 40px;
-  border-radius: 20px; /* 一樣的圓角 */
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 20px 50px rgba(231, 111, 81, 0.2); /* 帶有主題色的陰影 */
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  animation: modalFadeIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.9) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
-.modal-header h2 {
-  margin: 0;
-  color: #6d4c41; /* 對齊搜尋區字體顏色 */
-  font-size: 1.5rem;
-  letter-spacing: 1px;
-}
-
-.close-x {
-  background: #ffe6d8;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #e76f51;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.close-x:hover {
-  background: #e76f51;
-  color: #fff;
-}
-
-/* ===============================
-   輸入框樣式 (對齊 .search-filters 樣式)
-================================ */
-.input-group {
-  margin-bottom: 18px;
-  text-align: left;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 6px;
-  color: #b08a74;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.input-group input {
-  width: 100%;
-  height: 44px; /* 比搜尋框略高一點，方便輸入 */
-  padding: 0 16px;
-  border-radius: 10px;
-  border: 1px solid #f0c4a8;
-  background-color: #fffaf6;
-  font-size: 1rem;
-  color: #6d4c41;
-  box-sizing: border-box;
-  transition: all 0.2s;
-}
-
-.input-group input:focus {
-  outline: none;
-  border-color: #f4a261;
-  box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.15);
-  background-color: #ffffff;
-}
-
-/* ===============================
-   按鈕樣式 (對齊 login-btn 樣式)
-================================ */
-.modal-footer {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 登入按鈕使用你的漸層色 */
-.btn-main {
-  width: 100%;
-  height: 48px;
-  border-radius: 24px;
+/* 登入按鈕 */
+.login-btn {
+  margin: 0; /* 移除原本的 margin-left: auto */
+  padding: 8px 18px;
+  border-radius: 20px;
   border: none;
   background: linear-gradient(135deg, #f4a261, #e76f51);
   color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   cursor: pointer;
   box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25);
-  transition: all 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-main:hover {
-  transform: translateY(-2px);
+/* ===============================
+   進入管理中心按鈕
+================================ */
+.admin-link-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(135deg, #2a9d8f, #264653);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(42, 157, 143, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover, .admin-link-btn:hover {
+  transform: translateY(-1px);
+}
+
+.login-btn:hover {
   box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
 }
 
-.footer-sub-btns {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 10px;
+.admin-link-btn:hover {
+  box-shadow: 0 8px 18px rgba(42, 157, 143, 0.35);
 }
 
-/* 連結按鈕使用輔助色 */
-.btn-link {
-  background: none;
-  border: none;
-  color: #b08a74;
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 5px;
-  transition: color 0.2s;
-}
-
-.btn-link:hover {
-  color: #e76f51;
-  text-decoration: underline;
-}
 /* ===============================
-   搜尋區
+   搜尋區 (結構化更新)
 ================================ */
 .search-filters {
- display: flex;
+  display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-
-  padding: 16px 20px;
+  align-items: flex-end; /* 讓標籤與輸入框對齊 */
+  gap: 20px;
+  padding: 24px;
   margin-bottom: 32px;
-
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(6px);
   border-radius: 14px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
 }
 
-.search-filters input,
-.search-filters select {
-  height: 36px;
-  padding: 0 12px;
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
-  border-radius: 8px;
-  border: 1px solid #f0c4a8;
-  background-color: #fffaf6;
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b08a74;
+    margin-left: 4px;
+  }
 
-  font-size: 0.9rem;
-  color: #6d4c41;
+  input, select {
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #f0c4a8;
+    background-color: #fffaf6;
+    font-size: 0.9rem;
+    color: #6d4c41;
+    transition: all 0.2s;
 
-  transition: border-color 0.2s, box-shadow 0.2s;
+    &:focus {
+      outline: none;
+      border-color: #f4a261;
+      box-shadow: 0 0 0 2px rgba(244, 162, 97, 0.25);
+    }
+  }
 }
 
-.search-filters input::placeholder {
-  color: #b08a74;
+/* 日期區間特殊樣式 */
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  span {
+    color: #b08a74;
+    font-size: 0.85rem;
+  }
+
+  input[type="date"] {
+    width: 140px;
+    cursor: pointer;
+  }
 }
 
-.search-filters input:focus,
-.search-filters select:focus {
-  outline: none;
-  border-color: #f4a261;
-  box-shadow: 0 0 0 2px rgba(244, 162, 97, 0.25);
-}
-
-.search-filters button {
-  height: 36px;
-  padding: 0 18px;
-
+/* 搜尋提交按鈕 */
+.btn-search-submit {
+  height: 38px;
+  padding: 0 24px;
   border-radius: 8px;
   border: none;
-
   background-color: #f4a261;
   color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 500;
-
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.15s;
-}
+  transition: all 0.2s;
+  margin-left: auto; /* 推到右側 */
 
-.search-filters button:hover {
-  background-color: #e8944f;
-  transform: translateY(-1px);
+  &:hover {
+    background-color: #e8944f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(232, 148, 79, 0.3);
+  }
 }
 
 
@@ -427,6 +290,21 @@
 }
 
 /* ===============================
+   空頁訊息樣式
+================================ */
+.no-data-msg {
+  padding: 60px 20px;
+  text-align: center;
+  background: #ffffff;
+  margin-top: 8px;
+  border-radius: 10px;
+  color: #b08a74;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: 1px dashed #f0c4a8;
+}
+
+/* ===============================
    操作欄（row 專用）
 ================================ */
 .survey-row .col.action {
@@ -481,9 +359,80 @@
 }
 
 /* ===============================
-   RWD：小螢幕卡片模式
+   底部數位分頁
 ================================ */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(240, 196, 168, 0.4);
+}
+
+.page-numbers {
+  display: flex;
+  gap: 8px;
+}
+
+/* 基礎頁碼按鈕樣式 */
+.page-num-btn, .page-nav-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid #f0c4a8;
+  background-color: #ffffff;
+  color: #6d4c41;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover:not(:disabled) {
+    background-color: #fffaf6;
+    border-color: #f4a261;
+    color: #e76f51;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+  }
+}
+
+/* 當前選中頁碼樣式 */
+.page-num-btn.active {
+  background: linear-gradient(135deg, #f4a261, #e76f51);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(231, 111, 81, 0.3);
+}
+
+/* 導航按鈕微調 (<< < > >>) */
+.page-nav-btn {
+  background-color: #fffaf6;
+  font-weight: bold;
+}
+
+/* RWD 微調 */
 @media screen and (max-width: 768px) {
+  .pagination-wrapper {
+    gap: 6px;
+  }
+  .page-num-btn, .page-nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
 
   .login-btn {
     margin: 0 auto 20px;

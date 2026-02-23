@@ -1,9 +1,17 @@
 <div class="bg-wave"></div>
 
 <div class="survey-wrapper">
-  <button class="login-btn" (click)="isAdmin ? logout() : openLoginModal()">
-    {{ isAdmin ? "登出後台 (切換使用者)" : "登入後台" }}
-  </button>
+  <!-- 右上角按鈕組：將管理中心與登入按鈕並排 -->
+  <div class="top-actions">
+    @if (isAdmin) {
+      <button class="admin-link-btn" [routerLink]="['/admin']">
+        問卷管理中心
+      </button>
+    }
+    <button class="login-btn" (click)="isAdmin ? logout() : openLoginModal()">
+      {{ isAdmin ? "登出後台 (切換使用者)" : "登入後台" }}
+    </button>
+  </div>
 
   @if (showLoginModal) {
     <div class="modal-overlay" (click)="closeLoginModal()">
@@ -61,39 +69,53 @@
   }
 
   <div class="search-filters">
-    <input
-      type="text"
-      placeholder="搜尋問卷名稱..."
-      [(ngModel)]="searchText"
-      (input)="onSearch()"
-    />
+    <div class="filter-group">
+      <label>問卷名稱</label>
+      <input
+        type="text"
+        placeholder="搜尋問卷名稱..."
+        [(ngModel)]="searchText"
+        (input)="onSearch()"
+      />
+    </div>
 
-    <select [(ngModel)]="searchType" (change)="onSearch()">
-      <option value="">全部類型</option>
-      <option value="滿意度">滿意度</option>
-      <option value="市場調查">市場調查</option>
-      <option value="回饋">回饋</option>
-      <option value="活動">活動</option>
-      <option value="問卷">問卷</option>
-    </select>
+    <div class="filter-group">
+      <label>時間區間搜尋</label>
+      <div class="date-range">
+        <input type="date" [(ngModel)]="startDate" (change)="onSearch()">
+        <span>至</span>
+        <input type="date" [(ngModel)]="endDate" (change)="onSearch()">
+      </div>
+    </div>
 
-    <select [(ngModel)]="searchStatus" (change)="onSearch()">
-      <option value="">全部狀態</option>
-      <option value="已發佈">已發佈</option>
-      @if (isAdmin) {
-        <option value="已儲存尚未發佈">已儲存尚未發佈</option>
-        <option value="草稿">草稿</option>
-      } @else {
-        <option value="已儲存尚未發佈">未開放填寫</option>
-        <option value="草稿">未開放填寫</option>
-      }
-    </select>
+    <div class="filter-group">
+      <label>類型</label>
+      <select [(ngModel)]="searchType" (change)="onSearch()">
+        <option value="">全部類型</option>
+        <option value="滿意度">滿意度</option>
+        <option value="市場調查">市場調查</option>
+        <option value="回饋">回饋</option>
+        <option value="活動">活動</option>
+        <option value="問卷">問卷</option>
+      </select>
+    </div>
 
-    <button class="btn btn-warning" (click)="onImportTestData()">
-      一鍵導入假資料到 MySQL
-    </button>
+    <div class="filter-group">
+      <label>狀態</label>
+      <select [(ngModel)]="searchStatus" (change)="onSearch()">
+        <option value="">全部狀態</option>
+        <option value="已發佈">已發佈</option>
+        @if (isAdmin) {
+          <option value="已儲存尚未發佈">已儲存尚未發佈</option>
+          <option value="草稿">草稿</option>
+        } @else {
+          <option value="已儲存尚未發佈">未開放填寫</option>
+          <option value="草稿">未開放填寫</option>
+        }
+      </select>
+    </div>
 
-    <button (click)="onSearch()">搜尋</button>
+    <button class="btn-search-submit" (click)="onSearch()">搜尋</button>
   </div>
 
   <div class="survey-list">
@@ -108,9 +130,9 @@
       <div class="col action">操作</div>
     </div>
 
-    @for (survey of filteredSurveys; track survey.id) {
+    @for (survey of paginatedSurveys; track survey.id) {
       <div class="survey-row">
-        <div class="col id">{{ $index + 1 }}</div>
+        <div class="col id">{{ ($index + 1) + (currentPage - 1) * pageSize }}</div>
 
         <div class="col title">{{ survey.title }}</div>
         <div class="col type">{{ survey.type }}</div>
@@ -160,6 +182,56 @@
           }
         </div>
       </div>
+    } @empty {
+      <!-- 當前頁面無問卷時顯示 -->
+      <div class="no-data-msg">
+        此頁無問卷
+      </div>
     }
+  </div>
+
+  <!-- 底部數位分頁區塊：始終顯示 -->
+  <div class="pagination-wrapper">
+    <button 
+      class="page-nav-btn" 
+      [disabled]="currentPage === 1" 
+      (click)="goToPage(1)"
+    >
+      &laquo;
+    </button>
+    <button 
+      class="page-nav-btn" 
+      [disabled]="currentPage === 1" 
+      (click)="goToPage(currentPage - 1)"
+    >
+      &lt;
+    </button>
+
+    <div class="page-numbers">
+      @for (p of pageNumbers; track p) {
+        <button 
+          class="page-num-btn" 
+          [class.active]="p === currentPage"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
+      }
+    </div>
+
+    <button 
+      class="page-nav-btn" 
+      [disabled]="currentPage === navMaxPage" 
+      (click)="goToPage(currentPage + 1)"
+    >
+      &gt;
+    </button>
+    <button 
+      class="page-nav-btn" 
+      [disabled]="currentPage === navMaxPage" 
+      (click)="goToPage(navMaxPage)"
+    >
+      &raquo;
+    </button>
   </div>
 </div>
