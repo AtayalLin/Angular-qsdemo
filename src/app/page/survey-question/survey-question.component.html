@@ -4,7 +4,8 @@
 <div class="result-page">
     <section class="survey-header">
         <h1 class="survey-title">{{ surveyData.title }}</h1>
-        <p class="survey-intro">請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。</p>
+        <!-- [修正] 改為讀取動態問卷說明 -->
+        <p class="survey-intro">{{ surveyData.description || '請分享您的看法，我們將依據回饋打造更好的體驗。' }}</p>
         <div class="survey-meta">
             <span>調查期間：{{ surveyData.startDate }} ～ {{ surveyData.endDate }}</span>
             <span>問卷 ID：#{{ id }}</span>
@@ -13,41 +14,45 @@
 
     <form class="question-list" (submit)="onSubmit($event)">
 
-        <div class="question-card user-info-card">
-            <div class="question-head">
-                <span class="question-type text">基本資料</span>
-                <h3>聯絡人資訊</h3>
-            </div>
+        <!-- [修正] 僅在有啟用基本資料時顯示此區塊，功用：優化動態顯示邏輯 -->
+        @if (visibleProjectCount > 0) {
+            <div class="question-card user-info-card">
+                <div class="question-head">
+                    <span class="question-type text">基本資料</span>
+                    <h3>聯絡人資訊</h3>
+                </div>
 
-            <div class="user-info-grid" [ngClass]="'cols-' + visibleProjectCount">
-                @if (basicInfoConfig.name) {
-                    <div class="input-group">
-                        <label for="userName">姓名 <span class="required">*</span></label>
-                        <input type="text" id="userName" name="userName" [(ngModel)]="userInfo.name" placeholder="請輸入姓名"
-                            class="custom-input" required>
-                    </div>
-                }
-                @if (basicInfoConfig.phone) {
-                    <div class="input-group">
-                        <label for="userPhone">電話 <span class="required">*</span></label>
-                        <input type="tel" id="userPhone" name="userPhone" [(ngModel)]="userInfo.phone"
-                            placeholder="0912-345-678" class="custom-input" required>
-                    </div>
-                }
-                @if (basicInfoConfig.email) {
-                    <div class="input-group">
-                        <label for="userEmail">信箱 <span class="required">*</span></label>
-                        <input type="email" id="userEmail" name="userEmail" [(ngModel)]="userInfo.email"
-                            placeholder="example@mail.com" class="custom-input" required>
-                    </div>
-                }
+                <div class="user-info-grid" [ngClass]="'cols-' + visibleProjectCount">
+                    @if (basicInfoConfig.name) {
+                        <div class="input-group">
+                            <label for="userName">姓名 <span class="required">*</span></label>
+                            <input type="text" id="userName" name="userName" [(ngModel)]="userInfo.name" placeholder="請輸入姓名"
+                                class="custom-input" required>
+                        </div>
+                    }
+                    @if (basicInfoConfig.phone) {
+                        <div class="input-group">
+                            <label for="userPhone">電話 <span class="required">*</span></label>
+                            <input type="tel" id="userPhone" name="userPhone" [(ngModel)]="userInfo.phone"
+                                placeholder="0912-345-678" class="custom-input" required>
+                        </div>
+                    }
+                    @if (basicInfoConfig.email) {
+                        <div class="input-group">
+                            <label for="userEmail">信箱 <span class="required">*</span></label>
+                            <input type="email" id="userEmail" name="userEmail" [(ngModel)]="userInfo.email"
+                                placeholder="example@mail.com" class="custom-input" required>
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
+        }
 
         @for (q of surveyData.questions; track q.id; let i = $index) {
         <div class="question-card">
             <div class="question-head">
-                <span class="question-type" [class]="q.type">
+                <!-- [修正] 使用 ngClass 避免覆蓋基礎樣式，功用：修復標籤外觀失效問題 -->
+                <span class="question-type" [ngClass]="q.type">
                     {{ q.type === 'single' ? '單選題' : q.type === 'multiple' ? '複選題' : '開放題' }}
                 </span>
                 <h3>Q{{ i + 1 }}：{{ q.title }}</h3>
@@ -55,25 +60,25 @@
 
             <div class="list-layout">
                 @switch (q.type) {
-                @case ('single') {
-                @for (opt of q.options; track opt) {
-                <label class="custom-option">
-                    <input type="radio" [name]="'q' + q.id" [value]="opt">
-                    <div class="option-box">{{ opt }}</div>
-                </label>
-                }
-                }
-                @case ('multiple') {
-                @for (opt of q.options; track opt) {
-                <label class="custom-option">
-                    <input type="checkbox" [name]="'q' + q.id" [value]="opt">
-                    <div class="option-box">{{ opt }}</div>
-                </label>
-                }
-                }
-                @case ('text') {
-                <textarea class="custom-textarea" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."></textarea>
-                }
+                    @case ('single') {
+                        @for (opt of q.options || []; track opt) {
+                        <label class="custom-option">
+                            <input type="radio" [name]="'q' + q.id" [value]="opt">
+                            <div class="option-box">{{ opt }}</div>
+                        </label>
+                        }
+                    }
+                    @case ('multiple') {
+                        @for (opt of q.options || []; track opt) {
+                        <label class="custom-option">
+                            <input type="checkbox" [name]="'q' + q.id" [value]="opt">
+                            <div class="option-box">{{ opt }}</div>
+                        </label>
+                        }
+                    }
+                    @case ('text') {
+                        <textarea class="custom-textarea" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."></textarea>
+                    }
                 }
             </div>
         </div>
