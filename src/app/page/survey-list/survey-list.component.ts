@@ -104,12 +104,21 @@ export class SurveyListComponent implements OnInit {
     // 1. 初始化列表
     this.fetchSurveys();
 
-    // 2. 檢查登入狀態持久化
+    // 2. [修正] 完整檢查並恢復登入狀態持久化
     const savedLogin = localStorage.getItem('isAdmin');
+    const savedUser = localStorage.getItem('currentUser');
+    
     if (savedLogin === 'true') {
       this.isAdmin = true;
-      this.onSearch();
+      this.isLoggedIn = true;
     }
+    
+    if (savedUser) {
+      this.currentUser = JSON.parse(savedUser);
+      this.isLoggedIn = true;
+    }
+
+    this.onSearch();
 
     // 3. 監聽 URL 參數
     this.route.queryParams.subscribe((params) => {
