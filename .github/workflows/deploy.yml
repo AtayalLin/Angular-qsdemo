@@ -21,8 +21,10 @@ jobs:
       - name: Install and Build
         run: |
           npm ci
-          # 這裡會自動幫你加上 /qsdemo/ 前綴，不用改 angular.json
-          npx ng build --base-href /qsdemo/
+          # 修正：base-href 必須與 GitHub 倉庫名稱一致
+          npx ng build --base-href /Angular-qsdemo/
+          # 修正：複製 index.html 為 404.html 以支援重新整理頁面
+          cp dist/qsdemo/browser/index.html dist/qsdemo/browser/404.html
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
