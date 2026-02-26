@@ -18,7 +18,7 @@ export class SurveyQuestionComponent implements OnInit {
 
   id: string | null = null;
   isSubmitting = false;
-  surveyData?: Survey;
+  surveyData: Survey | undefined; // [修正] 明確指定型別以支援 description 屬性
 
   showModal = false;
   modalStep: 'confirm' | 'thanks' = 'confirm';

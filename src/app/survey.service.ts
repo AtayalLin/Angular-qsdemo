@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 export interface Question {
   id: number;
   title: string;
-  type: 'single' | 'multiple' | 'text'; // 前端介面依然維持 multiple 以利閱讀
+  type: 'single' | 'multiple' | 'text';
   options?: string[];
   cssClass?: string;
 }
@@ -14,7 +14,7 @@ export interface Survey {
   id: number;
   title: string;
   type: string;
-  description?: string; // [新增] 問卷說明欄位，對應後端資料庫欄位
+  description?: string; // [關鍵] 確保此屬性存在
   startDate: string;
   endDate: string;
   participants: number;
@@ -45,7 +45,7 @@ export class SurveyService {
       id: 6,
       title: '87世紀遊戲主機／平台市場調查',
       type: '市場調查',
-      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。', // [補上假資料說明]
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
       startDate: '2026-02-15',
       endDate: '2026-12-31',
       participants: 1200,
@@ -66,7 +66,7 @@ export class SurveyService {
         {
           id: 2,
           title: '您選擇遊戲平台時重視哪些因素？（可複選）',
-          type: 'multiple', // 這裡維持 multiple，映射邏輯寫在下方方法中
+          type: 'multiple',
           options: [
             '遊戲陣容與獨佔作品',
             '主機效能與畫面表現',
@@ -80,7 +80,7 @@ export class SurveyService {
           type: 'single',
           options: [
             '非常願意',
-            '視價格與內容而定',
+            '視價格與內容時定',
             '目前已擁有相關設備',
             '暫時沒有興趣',
             '完全不考慮',
@@ -101,9 +101,6 @@ export class SurveyService {
     },
   ];
 
-  /**
-   * [修正版] 格式化並發送至後端
-   */
   importMockDataToDatabase(): Observable<any> {
     const apiURL = 'http://localhost:8080/quiz/create';
     const mockSurvey = this.surveys[0];
@@ -117,15 +114,12 @@ export class SurveyService {
       questionsList: mockSurvey.questions?.map((q) => ({
         question_id: q.id,
         question: q.title,
-        // --- 重點修正：對齊後端 Type 期待的字串 ---
-        // 如果前端是 'multiple'，則轉為後端通常期待的 'multi'
         type: q.type === 'multiple' ? 'multi' : q.type,
         is_required: true,
         options: q.options ? q.options.join(';') : '',
       })),
     };
 
-    console.log('修正後準備送出的 JSON:', payload);
     return this.http.post(apiURL, payload);
   }
 
