@@ -4,7 +4,7 @@
 <div class="result-page">
     <section class="survey-header">
         <h1 class="survey-title">{{ surveyData.title }}</h1>
-        <!-- [修正] 改為讀取動態問卷說明 -->
+        <!-- [修正] 讀取動態說明，並給予預設值 -->
         <p class="survey-intro">{{ surveyData.description || '請分享您的看法，我們將依據回饋打造更好的體驗。' }}</p>
         <div class="survey-meta">
             <span>調查期間：{{ surveyData.startDate }} ～ {{ surveyData.endDate }}</span>
@@ -14,7 +14,6 @@
 
     <form class="question-list" (submit)="onSubmit($event)">
 
-        <!-- [修正] 僅在有啟用基本資料時顯示此區塊，功用：優化動態顯示邏輯 -->
         @if (visibleProjectCount > 0) {
             <div class="question-card user-info-card">
                 <div class="question-head">
@@ -51,8 +50,8 @@
         @for (q of surveyData.questions; track q.id; let i = $index) {
         <div class="question-card">
             <div class="question-head">
-                <!-- [修正] 使用 ngClass 避免覆蓋基礎樣式，功用：修復標籤外觀失效問題 -->
                 <span class="question-type" [ngClass]="q.type">
+                    <!-- [修正] 補上三元運算子的 ? 符號，功用：修復 HTML 語法錯誤 -->
                     {{ q.type === 'single' ? '單選題' : q.type === 'multiple' ? '複選題' : '開放題' }}
                 </span>
                 <h3>Q{{ i + 1 }}：{{ q.title }}</h3>
@@ -101,7 +100,6 @@
 @if (showModal) {
 <div class="modal-overlay">
     @switch (modalStep) {
-        
         @case ('confirm') {
         <div class="gaming-modal">
             <div class="modal-icon">📝</div>
@@ -114,7 +112,6 @@
             </div>
         </div>
         }
-
         @case ('thanks') {
         <div class="gaming-modal modal-animate-in">
             <div class="modal-icon">🎉</div>
