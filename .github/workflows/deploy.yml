@@ -21,9 +21,9 @@ jobs:
       - name: Install and Build
         run: |
           npm ci
-          # 修正：base-href 必須與 GitHub 倉庫名稱一致
-          npx ng build --base-href /Angular-qsdemo/
-          # 修正：複製 index.html 為 404.html 以支援重新整理頁面
+          # 使用 angular.json 中設定的生產環境路徑進行編譯
+          npx ng build --configuration production
+          # 複製 404.html 以支援重新整理頁面
           cp dist/qsdemo/browser/index.html dist/qsdemo/browser/404.html
 
       - name: Deploy
