@@ -59,8 +59,22 @@
 .top-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  align-items: center;
+  gap: 15px;
   margin-bottom: 24px;
+}
+
+/* 歡迎文字樣式 */
+.user-welcome {
+  color: #6d4c41;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-right: 5px;
+
+  strong {
+    color: #e76f51;
+    font-weight: 700;
+  }
 }
 
 /* 登入按鈕 */
@@ -96,7 +110,22 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.login-btn:hover, .admin-link-btn:hover {
+/* 會員中心按鈕 */
+.member-link-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(69, 123, 157, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover, .admin-link-btn:hover, .member-link-btn:hover {
   transform: translateY(-1px);
 }
 
@@ -106,6 +135,10 @@
 
 .admin-link-btn:hover {
   box-shadow: 0 8px 18px rgba(42, 157, 143, 0.35);
+}
+
+.member-link-btn:hover {
+  box-shadow: 0 8px 18px rgba(69, 123, 157, 0.35);
 }
 
 /* ===============================

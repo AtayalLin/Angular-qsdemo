@@ -4,7 +4,8 @@ import { SurveyResultComponent } from './page/survey-result/survey-result.compon
 import { SurveyQuestionComponent } from './page/survey-question/survey-question.component';
 import { SurveyPreviewComponent } from './page/survey-preview/survey-preview.component'; 
 import { SurveyRegisterComponent } from './page/survey-register/survey-register.component';
-import { SurveyAdminComponent } from './page/survey-admin/survey-admin.component'; // 匯入新的後台管理組件
+import { SurveyAdminComponent } from './page/survey-admin/survey-admin.component';
+import { SurveyMemberComponent } from './page/survey-member/survey-member.component'; // 匯入新的會員中心組件
 
 export const routes: Routes = [
   {
@@ -40,5 +41,10 @@ export const routes: Routes = [
     /* 5. 後台管理頁面 (新增/編輯問卷) */
     path: 'admin',
     component: SurveyAdminComponent, // 註冊後台管理路由，功用：處理問卷管理流程
+  },
+  {
+    /* 6. 會員中心頁面 (查詢填答紀錄) */
+    path: 'member',
+    component: SurveyMemberComponent, // 註冊會員中心路由，功用：供一般會員查詢歷史資料
   },
 ];

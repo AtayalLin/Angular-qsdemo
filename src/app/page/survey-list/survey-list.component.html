@@ -3,14 +3,23 @@
 <div class="survey-wrapper">
   <!-- 右上角按鈕組：將管理中心與登入按鈕並排 -->
   <div class="top-actions">
-    @if (isAdmin) {
-      <button class="admin-link-btn" [routerLink]="['/admin']">
-        問卷管理中心
-      </button>
-      <button class="admin-link-btn" (click)="logout()">
-        管理員登出
-      </button>
+    @if (isLoggedIn) {
+      <span class="user-welcome">您好, <strong>{{ currentUser?.name }}</strong></span>
+      
+      @if (isAdmin) {
+        <button class="admin-link-btn" [routerLink]="['/admin']">
+          問卷管理中心
+        </button>
+        <button class="admin-link-btn" (click)="logout()">
+          管理員登出
+        </button>
+      } @else {
+        <button class="member-link-btn" [routerLink]="['/member']">
+          會員中心
+        </button>
+      }
     }
+    
     <button
       class="login-btn"
       (click)="isLoggedIn ? logout() : openLoginModal()"
