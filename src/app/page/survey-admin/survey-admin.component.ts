@@ -44,13 +44,13 @@ export class SurveyAdminComponent implements OnInit {
     endDate: ''
   };
 
-  // --- 題目編輯相關變數 ---
+  // --- [新增] 題目編輯相關變數 ---
   
-  // 使用者個資收集設定 (必填)
+  // 使用者個資收集設定 (功用：決定填寫頁面是否顯示並強制填寫)
   basicInfoConfig = {
-    name: true,
-    phone: false,
-    email: false
+    name: true,   // [決策] 預設啟用且必填
+    phone: false, // 預設關閉
+    email: false  // 預設關閉
   };
 
   // 動態題目列表
@@ -67,23 +67,74 @@ export class SurveyAdminComponent implements OnInit {
   }
 
   /**
-   * 載入特定問卷資料
-   * 功用：從 Service 取得資料並填充至編輯模型中。
+   * 載入特定問卷資料並進行格式轉換
+   * 功用：將符合 MySQL 規格的資料轉化為編輯器專用的互動格式。
    */
   private loadSurveyData(id: number): void {
-    this.surveyService.getSurveyById(id).subscribe((survey: Survey | undefined) => { // 指定回傳型別，功用：修正 TS7006 錯誤
+    this.surveyService.getSurveyById(id).subscribe((survey: Survey | undefined) => {
       if (survey) {
+        // --- [功能實現：問卷說明自動填入規劃] ---
+        // 說明：目前 Eclipse/MySQL 尚未定義 description 欄位，故先採用假資料顯示。
+        // 未來若要接軌正式資料，只需調整下方賦值邏輯。
+        const initialDescription = '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。';
+        
+        // 1. 映射問卷層級資料 (完全對齊 Eclipse 既有 JSON 格式)
         this.currentSurvey = {
           id: survey.id,
           title: survey.title,
           type: survey.type,
-          description: '', // 假資料目前無說明，預留空值
+          
+          /* ============================================================
+             [問卷說明 - 資料讀取邏輯預留區]
+             目前狀態：手動填入假資料說明 (initialDescription)
+             未來狀態：解除下方註解並移除 initialDescription 以對接 MySQL
+             ============================================================ */
+          description: initialDescription, 
+          // description: survey.description || '', // 未來對接 Eclipse 的正確基本類型與欄位格式
+          
           startDate: survey.startDate,
           endDate: survey.endDate
         };
-        // 若問卷已有題目，也一併載入 (目前先初始化空陣列)
-        this.questions = []; 
-        console.log(`已載入問卷：${survey.title}`);
+
+        // [新增] 模擬加載基本資料配置 (未來從 DB 讀取)
+        this.basicInfoConfig = {
+          name: true,
+          phone: survey.id % 2 === 0, // 僅作示範：偶數 ID 開啟電話
+          email: false
+        };
+
+        // 2. 映射題目層級資料 (對齊 MySQL 扁平化轉前端結構化邏輯)
+        if (survey.questions && survey.questions.length > 0) {
+          this.questions = survey.questions.map(q => {
+            // 處理選項：若為字串則依分號拆分，若已是陣列則直接使用
+            let decodedOptions: string[] = [];
+            if (Array.isArray(q.options)) {
+              decodedOptions = [...q.options];
+            } else if (typeof q.options === 'string' && q.options) {
+              decodedOptions = (q.options as string).split(';');
+            } else {
+              decodedOptions = q.type === 'text' ? [] : ['選項 1'];
+            }
+
+            const mappedQuest: AdminQuestion = {
+              id: q.id,
+              title: q.title,
+              // 類型對齊：確保後端 'multi' 正確映射至前端 'multi'
+              type: q.type === 'multiple' ? 'multi' : (q.type as any),
+              options: decodedOptions,
+              // [修正] 讀取資料庫中的必填狀態，若無則預設為 false
+              isRequired: (q as any).isRequired ?? false 
+            };
+
+            // 針對特定題型載入預設限制
+            if (mappedQuest.type === 'multi') mappedQuest.maxSelectable = decodedOptions.length;
+            if (mappedQuest.type === 'text') mappedQuest.maxCharacters = 100;
+
+            return mappedQuest;
+          });
+        }
+
+        console.log(`問卷「${survey.title}」資料轉換完成，已自動填充至欄位並同步必填狀態。`);
       }
     });
   }
@@ -98,7 +149,7 @@ export class SurveyAdminComponent implements OnInit {
 
   /**
    * 新增題目
-   * 功用：根據類型產生初始化的題目卡片。
+   * 功用：根據類型產生卡片，[決策] 所有題目預設為「不必填」。
    */
   addQuestion(type: 'single' | 'multi' | 'text'): void {
     const newId = this.questions.length > 0 
@@ -110,7 +161,7 @@ export class SurveyAdminComponent implements OnInit {
       title: '',
       type: type,
       options: type === 'text' ? [] : ['選項 1'],
-      isRequired: true
+      isRequired: false // [決策] 預設為不必填
     };
 
     // 多選預設限制為 1
@@ -170,8 +221,13 @@ export class SurveyAdminComponent implements OnInit {
     this.adminSubStep = 'edit';
   }
 
+  /**
+   * 確認儲存 (目前為模擬)
+   * 功用：未來將與後端 API 串接，目前僅顯示成功訊息。
+   */
   confirmSave(): void {
     alert('問卷設定已確認！現在請開始編輯題目。');
+    // 自動跳轉到第二個頁籤「題目編輯」
     this.activeTab = 'questions';
     this.adminSubStep = 'edit';
   }

@@ -260,7 +260,20 @@
 }
 
 .question-card {
-  border-left: 5px solid #f4a261; background: #fff;
+  border-left: 5px solid #f0c4a8;
+  background: #fff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.is-required-active {
+    border-left-color: #e76f51;
+    background: #fffaf6;
+    box-shadow: 0 8px 24px rgba(231, 111, 81, 0.08);
+  }
+
+  &:hover {
+    transform: translateX(5px);
+  }
+
   .card-top {
     display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #fff2e8;
     .quest-index { font-weight: 800; color: #e76f51; }

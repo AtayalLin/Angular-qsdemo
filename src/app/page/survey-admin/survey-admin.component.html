@@ -172,7 +172,7 @@
           <!-- B. 動態題目列表 (大卡片式) -->
           <div class="questions-list">
             @for (q of questions; track q.id; let i = $index) {
-              <div class="admin-big-card question-card">
+              <div class="admin-big-card question-card" [class.is-required-active]="q.isRequired">
                 <div class="card-top">
                   <span class="quest-index">問題 {{ i + 1 }}</span>
                   <span class="quest-type-tag" [ngClass]="q.type">

@@ -19,22 +19,28 @@
                 <h3>聯絡人資訊</h3>
             </div>
 
-            <div class="user-info-grid">
-                <div class="input-group">
-                    <label for="userName">姓名</label>
-                    <input type="text" id="userName" name="userName" [(ngModel)]="userInfo.name" placeholder="請輸入姓名"
-                        class="custom-input" required>
-                </div>
-                <div class="input-group">
-                    <label for="userPhone">電話</label>
-                    <input type="tel" id="userPhone" name="userPhone" [(ngModel)]="userInfo.phone"
-                        placeholder="0912-345-678" class="custom-input" required>
-                </div>
-                <div class="input-group">
-                    <label for="userEmail">信箱</label>
-                    <input type="email" id="userEmail" name="userEmail" [(ngModel)]="userInfo.email"
-                        placeholder="example@mail.com" class="custom-input" required>
-                </div>
+            <div class="user-info-grid" [ngClass]="'cols-' + visibleProjectCount">
+                @if (basicInfoConfig.name) {
+                    <div class="input-group">
+                        <label for="userName">姓名 <span class="required">*</span></label>
+                        <input type="text" id="userName" name="userName" [(ngModel)]="userInfo.name" placeholder="請輸入姓名"
+                            class="custom-input" required>
+                    </div>
+                }
+                @if (basicInfoConfig.phone) {
+                    <div class="input-group">
+                        <label for="userPhone">電話 <span class="required">*</span></label>
+                        <input type="tel" id="userPhone" name="userPhone" [(ngModel)]="userInfo.phone"
+                            placeholder="0912-345-678" class="custom-input" required>
+                    </div>
+                }
+                @if (basicInfoConfig.email) {
+                    <div class="input-group">
+                        <label for="userEmail">信箱 <span class="required">*</span></label>
+                        <input type="email" id="userEmail" name="userEmail" [(ngModel)]="userInfo.email"
+                            placeholder="example@mail.com" class="custom-input" required>
+                    </div>
+                }
             </div>
         </div>
 

@@ -32,6 +32,21 @@ export class SurveyQuestionComponent implements OnInit {
     email: '',
   };
 
+  // [新增] 基本資料動態配置 (功用：根據管理者設定決定顯示哪些欄位)
+  basicInfoConfig = {
+    name: true,   // 預設姓名為必填
+    phone: false,
+    email: false
+  };
+
+  /**
+   * 取得當前啟用的基本資料項目數量
+   * 功用：協助 HTML 判斷應套用哪種 Grid 佈局類別 (如 1欄, 2欄 或 3欄)
+   */
+  get visibleProjectCount(): number {
+    return Object.values(this.basicInfoConfig).filter(v => v).length;
+  }
+
   ngOnInit(): void {
     const routeId = this.route.snapshot.paramMap.get('id');
     this.id = routeId;
@@ -40,6 +55,14 @@ export class SurveyQuestionComponent implements OnInit {
       this.surveyService.getSurveyById(Number(routeId)).subscribe({
         next: (result) => {
           this.surveyData = result;
+          // [實作] 載入管理員設定的欄位 (目前採模擬邏輯)
+          if (result) {
+            this.basicInfoConfig = {
+              name: true,
+              phone: result.id % 2 === 0, // 偶數問卷開啟電話需求
+              email: result.id === 6 // 特定問卷開啟信箱需求
+            };
+          }
         },
         error: (err) => console.error('抓取問卷失敗', err),
       });
@@ -60,12 +83,10 @@ export class SurveyQuestionComponent implements OnInit {
     if (!this.surveyData || !this.surveyData.questions) return;
 
     // 前端驗證：聯絡資訊
-    if (!this.userInfo.name || !this.userInfo.phone || !this.userInfo.email) {
-      alert('請填寫完整聯絡人資訊');
-      return;
-    }
-
-    // [新增] 檢查答案必填邏輯 (可視需求加入)
+    const { name, phone, email } = this.basicInfoConfig;
+    if (name && !this.userInfo.name) { alert('請填寫姓名'); return; }
+    if (phone && !this.userInfo.phone) { alert('請填寫電話'); return; }
+    if (email && !this.userInfo.email) { alert('請填寫信箱'); return; }
 
     // 先收集數據並暫存
     this.tempAnswers = this.collectAnswers();

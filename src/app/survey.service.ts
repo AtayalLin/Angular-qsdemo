@@ -14,6 +14,7 @@ export interface Survey {
   id: number;
   title: string;
   type: string;
+  description?: string; // [新增] 問卷說明欄位，對應後端資料庫欄位
   startDate: string;
   endDate: string;
   participants: number;
@@ -44,6 +45,7 @@ export class SurveyService {
       id: 6,
       title: '87世紀遊戲主機／平台市場調查',
       type: '市場調查',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。', // [補上假資料說明]
       startDate: '2026-02-15',
       endDate: '2026-12-31',
       participants: 1200,
