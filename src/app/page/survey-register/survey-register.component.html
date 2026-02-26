@@ -12,8 +12,9 @@
 
     <form #regForm="ngForm" (ngSubmit)="onRegister()">
       <div class="reg-input-group">
-        <label>帳號 Account</label>
+        <label for="regAccount">帳號 Account</label>
         <input
+          id="regAccount"
           type="email"
           name="account"
           [(ngModel)]="regData.account"
@@ -23,8 +24,9 @@
       </div>
 
       <div class="reg-input-group">
-        <label>姓名 Name</label>
+        <label for="regName">姓名 Name</label>
         <input
+          id="regName"
           type="text"
           name="name"
           [(ngModel)]="regData.name"
@@ -34,9 +36,10 @@
       </div>
 
       <div class="reg-input-group">
-        <label>密碼 Password</label>
+        <label for="regPassword">密碼 Password</label>
         <div class="password-wrapper">
           <input
+            id="regPassword"
             [type]="showPassword ? 'text' : 'password'"
             name="password"
             [(ngModel)]="regData.password"
@@ -58,9 +61,10 @@
       </div>
 
       <div class="reg-input-group">
-        <label>確認密碼 Confirm Password</label>
+        <label for="regConfirmPassword">確認密碼 Confirm Password</label>
         <div class="password-wrapper">
           <input
+            id="regConfirmPassword"
             [type]="showConfirmPassword ? 'text' : 'password'"
             name="confirmPassword"
             [(ngModel)]="regData.confirmPassword"

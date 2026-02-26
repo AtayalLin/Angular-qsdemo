@@ -23,8 +23,10 @@
 
         <div class="modal-body">
           <div class="input-group">
-            <label>帳號 Account</label>
+            <label for="loginAccount">帳號 Account</label>
             <input
+              id="loginAccount"
+              name="account"
               type="text"
               [(ngModel)]="loginForm.account"
               placeholder="請輸入帳號"
@@ -32,9 +34,11 @@
           </div>
 
           <div class="input-group">
-            <label>密碼 Password</label>
+            <label for="loginPassword">密碼 Password</label>
             <div class="password-wrapper">
               <input
+                id="loginPassword"
+                name="password"
                 [type]="showPassword ? 'text' : 'password'"
                 [(ngModel)]="loginForm.password"
                 placeholder="請輸入密碼"
