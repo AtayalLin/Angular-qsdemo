@@ -6,16 +6,12 @@
 /* 1. 全螢幕背景 (與列表頁一致) */
 .bg-wave {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(160deg, #ffe6d8 0%, #ffd3c0 50%, #ffbfa0 100%);
-  overflow: hidden;
-  z-index: -1;
+  overflow: hidden; z-index: -1;
 }
 
-/* 2. 主容器 (與 .survey-wrapper 一致) */
+/* 2. 主容器 */
 .survey-wrapper {
   max-width: 1100px;
   margin: 60px auto;
@@ -29,190 +25,372 @@
 
 /* 3. 標題列佈局 */
 .admin-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #f4a261;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #f4a261;
 
   .title-group {
-    h1 {
-      margin: 0;
-      color: #6d4c41;
-      font-size: 1.8rem;
-      letter-spacing: 1px;
-    }
-    .breadcrumb {
-      font-size: 0.85rem;
-      color: #b08a74;
-      margin-top: 4px;
-      display: block;
-    }
+    h1 { margin: 0; color: #6d4c41; font-size: 1.8rem; letter-spacing: 1px; }
+    .breadcrumb { font-size: 0.85rem; color: #b08a74; margin-top: 4px; display: block; }
   }
 }
 
-/* 4. 返回按鈕 (套用列表頁 login-btn 樣式) */
 .btn-back {
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: none;
+  padding: 8px 20px; border-radius: 20px; border: none;
   background: linear-gradient(135deg, #f4a261, #e76f51);
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25);
-  transition: all 0.2s;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
-  }
+  color: #ffffff; font-size: 0.85rem; font-weight: 500; cursor: pointer;
+  box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25); transition: all 0.2s;
+  &:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35); }
 }
 
-/* 5. 導覽切換列 (套用 search-filters 毛玻璃樣式) */
+/* 4. 導覽切換列 (毛玻璃樣式) */
 .admin-nav-bar {
-  display: flex;
-  gap: 12px;
-  padding: 14px 20px;
-  margin-bottom: 32px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(6px);
-  border-radius: 14px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  display: flex; gap: 12px; padding: 14px 20px; margin-bottom: 32px;
+  background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(6px);
+  border-radius: 14px; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
 
   button {
-    height: 38px;
-    padding: 0 24px;
-    border-radius: 8px;
+    height: 38px; padding: 0 24px; border-radius: 8px; border: 1px solid #f0c4a8;
+    background-color: #fffaf6; color: #6d4c41; font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    &:hover { background-color: #ffbfa0; }
+    &.active { background-color: #f4a261; color: #ffffff; border-color: #f4a261; box-shadow: 0 4px 10px rgba(244, 162, 97, 0.25); }
+  }
+}
+
+/* 5. 內容主卡片 */
+.admin-main-card {
+  background: #ffffff; border-radius: 15px; min-height: 600px;
+  border: 1px solid #f0c4a8; overflow: hidden;
+}
+
+.admin-pane { display: flex; flex-direction: column; height: 100%; }
+
+.pane-header {
+  padding: 20px 30px; background: #fffaf6; border-bottom: 1px solid #f0c4a8;
+  display: flex; justify-content: space-between; align-items: center;
+
+  .header-title-context {
+    display: flex; flex-direction: column; gap: 4px;
+    h2 {
+      margin: 0; font-size: 1.3rem; color: #6d4c41; position: relative; padding-left: 12px;
+      &::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 18px; background: #e76f51; border-radius: 2px; }
+    }
+    .editing-target { font-size: 0.85rem; color: #b08a74; padding-left: 12px; strong { color: #e76f51; margin-left: 4px; } }
+  }
+}
+
+.pane-body { padding: 30px; color: #6d4c41; }
+.scrollable-content { max-height: 800px; overflow-y: auto; }
+
+/* ===============================
+   問卷設定 - 專業容器佈局 (新增/更新)
+================================ */
+.form-content-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* 專業表單網格佈局 */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 二欄式佈局 */
+  gap: 30px 40px; /* 寬裕的列間距與行間距 */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.col-span-2 {
+    grid-column: span 2;
+  }
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #b08a74;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+
+    .required {
+      color: #e76f51;
+      margin-left: 5px;
+      font-size: 1.1rem;
+    }
+  }
+
+  input, textarea, select {
+    width: 100%;
     border: 1px solid #f0c4a8;
     background-color: #fffaf6;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 1rem;
     color: #6d4c41;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
 
-    &:hover {
-      background-color: #ffbfa0;
-    }
-
-    &.active {
-      background-color: #f4a261;
-      color: #ffffff;
+    &:focus {
+      outline: none;
       border-color: #f4a261;
-      box-shadow: 0 4px 10px rgba(244, 162, 97, 0.25);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(244, 162, 97, 0.12);
+    }
+
+    &::placeholder {
+      color: #d2b4a0;
+      font-size: 0.95rem;
+    }
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.6;
+  }
+
+  select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23b08a74' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    padding-right: 40px;
+  }
+}
+
+/* 專業預覽佈局 */
+.admin-preview-layout {
+  animation: fadeIn 0.4s ease-out;
+
+  .preview-card {
+    background: #fffaf6;
+    border: 1px solid #f0c4a8;
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    box-shadow: 0 10px 25px rgba(240, 196, 168, 0.1);
+  }
+
+  .preview-row {
+    display: flex;
+    gap: 40px;
+    
+    &.single {
+      flex-direction: column;
+    }
+  }
+
+  .preview-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .p-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b08a74;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .p-value {
+      font-size: 1.15rem;
+      color: #6d4c41;
+      font-weight: 500;
+
+      &.highlight {
+        font-weight: 700;
+        color: #e76f51;
+        font-size: 1.4rem;
+      }
+
+      &.tag {
+        display: inline-block;
+        background: #f4a261;
+        color: #fff;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        width: fit-content;
+      }
+
+      &.description-text {
+        line-height: 1.8;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px dashed #f0c4a8;
+        white-space: pre-wrap;
+      }
+
+      &.date-range {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #6d4c41;
+
+        i { color: #f4a261; }
+        .to { color: #b08a74; font-size: 0.9rem; font-weight: 400; }
+      }
     }
   }
 }
 
-/* 6. 內容主卡片 (專業切板) */
-.admin-main-card {
-  background: #ffffff;
-  border-radius: 15px;
-  min-height: 500px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-  border: 1px solid #f0c4a8;
-  overflow: hidden;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.admin-pane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+/* 題目大卡片 */
+.admin-big-card {
+  background: #fffaf6; border: 1px solid #f0c4a8; border-radius: 15px;
+  padding: 25px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
-/* 面板內部的 Header */
-.pane-header {
-  padding: 20px 30px;
-  background: #fffaf6;
-  border-bottom: 1px solid #f0c4a8;
+.basic-info-section {
+  .card-header { margin-bottom: 15px; h3 { margin: 0; font-size: 1.1rem; } .hint { font-size: 0.8rem; color: #b08a74; } }
+  .config-grid { display: flex; gap: 25px; margin-top: 15px; }
+  .config-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; input { width: 18px; height: 18px; accent-color: #e76f51; } }
+}
+
+.question-card {
+  border-left: 5px solid #f4a261; background: #fff;
+  .card-top {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #fff2e8;
+    .quest-index { font-weight: 800; color: #e76f51; }
+    .quest-type-tag {
+      padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; color: #fff;
+      &.single { background: #2a9d8f; } &.multi { background: #f4a261; } &.text { background: #6d4c41; }
+    }
+    .btn-remove-quest { margin-left: auto; background: none; border: none; font-size: 1.4rem; color: #ccc; cursor: pointer; &:hover { color: #e76f51; } }
+  }
+}
+
+.options-manager {
+  margin-top: 15px; padding: 15px; background: #fffaf6; border-radius: 8px;
+  .option-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    .opt-bullet { width: 22px; height: 22px; background: #f0c4a8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff; }
+    input { flex: 1; height: 34px; }
+    .btn-del-opt { background: none; border: none; color: #ccc; cursor: pointer; &:hover { color: #e76f51; } }
+  }
+  .btn-add-opt { background: none; border: 1px dashed #f4a261; color: #f4a261; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; &:hover { background: #f4a261; color: #fff; } }
+}
+
+.special-settings {
+  margin-top: 20px; display: flex; flex-wrap: wrap; gap: 20px; padding-top: 15px; border-top: 1px solid #fff2e8;
+  .setting-item { display: flex; align-items: center; gap: 8px; label { font-size: 0.8rem; font-weight: 700; color: #b08a74; } input { width: 80px; height: 30px; } }
+}
+
+/* 8. 下層工作台 */
+.draft-workstation {
+  margin-top: 50px; padding: 25px; background: #fff2e8; border-radius: 15px; border: 1px solid #f0c4a8;
+  .workstation-header { margin-bottom: 15px; h3 { margin: 0; } p { font-size: 0.85rem; color: #b08a74; } }
+  .draft-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .draft-item {
+    background: #fff; padding: 12px 15px; border-radius: 10px; display: flex; align-items: center; gap: 10px;
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; &.draft { background: #b08a74; } &.saved { background: #2a9d8f; } }
+    .title { flex: 1; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-load { padding: 4px 10px; font-size: 0.75rem; border: 1px solid #f4a261; color: #f4a261; background: #fff; border-radius: 4px; cursor: pointer; &:hover { background: #f4a261; color: #fff; } }
+  }
+}
+
+/* ===============================
+   按鈕群組與操作 (新增/更新)
+================================ */
+.pane-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 15px; /* 增加間距，解決按鈕貼在一起的問題 */
   align-items: center;
-
-  h2 {
-    margin: 0;
-    font-size: 1.3rem;
-    color: #6d4c41;
-    position: relative;
-    padding-left: 12px;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 18px;
-      background: #e76f51;
-      border-radius: 2px;
-    }
-  }
 }
 
-/* 面板內部的 Body */
-.pane-body {
-  padding: 30px;
-  color: #6d4c41;
-}
-
-/* 按鈕樣式 (對齊列表頁 action 按鈕) */
-.btn-save, .btn-add-quest {
-  height: 34px;
-  padding: 0 20px;
-  border-radius: 6px;
-  border: none;
-  font-size: 0.85rem;
+/* 基礎按鈕規範 */
+.btn-clear, .btn-next, .btn-confirm, .btn-back-step,
+.btn-add-single, .btn-add-multi, .btn-add-text {
+  height: 38px;
+  padding: 0 22px;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-save {
-  background-color: #2a9d8f;
-  color: #fff;
-}
-
-.btn-add-quest {
-  background-color: #f4a261;
-  color: #fff;
-}
-
-.btn-save:hover, .btn-add-quest:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-/* 空狀態樣式 */
-.empty-state {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 400px;
-  text-align: center;
+  white-space: nowrap;
+  border: none;
+}
+
+/* 新增題目按鈕色彩 (題目編輯分頁) */
+.btn-add-single {
+  background-color: #2a9d8f;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(42, 157, 143, 0.2);
+  &:hover { background-color: #238676; transform: translateY(-1.5px); box-shadow: 0 6px 14px rgba(42, 157, 143, 0.3); }
+}
+
+.btn-add-multi {
+  background-color: #f4a261;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(244, 162, 97, 0.2);
+  &:hover { background-color: #e8944f; transform: translateY(-1.5px); box-shadow: 0 6px 14px rgba(244, 162, 97, 0.3); }
+}
+
+.btn-add-text {
+  background-color: #6d4c41;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(109, 76, 65, 0.2);
+  &:hover { background-color: #5d3e35; transform: translateY(-1.5px); box-shadow: 0 6px 14px rgba(109, 76, 65, 0.3); }
+}
+
+/* 清除內容：白色底、淡色邊框 */
+.btn-clear {
+  background: #ffffff;
   color: #b08a74;
-
-  .icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.5;
-  }
-
-  h3 {
-    margin: 0 0 10px 0;
-    color: #6d4c41;
+  border: 1px solid #f0c4a8;
+  
+  &:hover {
+    background: #fff2e8;
+    color: #e76f51;
+    border-color: #e76f51;
   }
 }
 
-/* 預留內容裝飾框 */
-.placeholder-content {
-  margin-top: 20px;
-  height: 200px;
-  background: #fffaf6;
-  border: 2px dashed #f0c4a8;
-  border-radius: 10px;
+/* 下一步與確認：品牌漸層色 */
+.btn-next, .btn-confirm {
+  background: linear-gradient(135deg, #f4a261, #e76f51);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(231, 111, 81, 0.2);
+
+  &:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 16px rgba(231, 111, 81, 0.3);
+    filter: brightness(1.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
+
+/* 返回修改：柔和的橘色 */
+.btn-back-step {
+  background: #ffd3c0;
+  color: #6d4c41;
+  border: none;
+
+  &:hover {
+    background: #f4a261;
+    color: #ffffff;
+    transform: translateX(-2px); /* 加入向左退回的暗示 */
+  }
+}
+
+/* 題目卡片 */

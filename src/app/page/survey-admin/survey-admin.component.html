@@ -37,15 +37,93 @@
     @if (activeTab === 'survey') {
       <div class="admin-pane">
         <div class="pane-header">
-          <h2>問卷基本設定</h2>
+          <div class="header-title-context">
+            <h2>{{ adminSubStep === 'edit' ? '問卷基本設定' : '問卷內容預覽' }}</h2>
+            <span class="editing-target">
+              模式：<strong>{{ adminSubStep === 'edit' ? '資料填寫' : '最後確認' }}</strong>
+            </span>
+          </div>
           <div class="pane-actions">
-            <button class="btn-save">儲存設定</button>
+            @if (adminSubStep === 'edit') {
+              <button class="btn-clear" (click)='clearSurveySettings()'>清除內容</button>
+              <button class="btn-next" (click)='goToPreview()'>下一步 (預覽)</button>
+            } @else {
+              <button class="btn-back-step" (click)='backToEdit()'>返回修改</button>
+              <button class="btn-confirm" (click)='confirmSave()'>確認並前往編輯題目</button>
+            }
           </div>
         </div>
+
         <div class="pane-body">
-          <div class="mock-form">
-            <p>此處將依照您的 SCSS 規範放置問卷名稱、說明等輸入欄位...</p>
-            <div class="placeholder-content"></div>
+          <div class="form-content-container">
+            @if (adminSubStep === 'edit') {
+              <!-- 專業表單佈局 -->
+              <div class="admin-form-grid">
+                <div class="form-group col-span-1">
+                  <label>問卷名稱 <span class="required">*</span></label>
+                  <input type="text" [(ngModel)]="currentSurvey.title" placeholder="請輸入問卷標題">
+                </div>
+                <div class="form-group col-span-1">
+                  <label>問卷類型 <span class="required">*</span></label>
+                  <select [(ngModel)]="currentSurvey.type">
+                    <option value="" disabled selected>請選擇類型</option>
+                    <option value="滿意度">滿意度</option>
+                    <option value="市場調查">市場調查</option>
+                    <option value="回饋">回饋</option>
+                    <option value="活動">活動</option>
+                    <option value="問卷">問卷</option>
+                  </select>
+                </div>
+
+                <div class="form-group col-span-2">
+                  <label>問卷說明 <span class="required">*</span></label>
+                  <textarea [(ngModel)]="currentSurvey.description" rows="6" placeholder="請輸入問卷詳細說明內容..."></textarea>
+                </div>
+
+                <div class="form-group col-span-1">
+                  <label>開始時間 <span class="required">*</span></label>
+                  <input type="date" [(ngModel)]="currentSurvey.startDate">
+                </div>
+                <div class="form-group col-span-1">
+                  <label>結束時間 <span class="required">*</span></label>
+                  <input type="date" [(ngModel)]="currentSurvey.endDate">
+                </div>
+              </div>
+            } @else {
+              <!-- 專業預覽佈局 -->
+              <div class="admin-preview-layout">
+                <div class="preview-card">
+                  <div class="preview-row">
+                    <div class="preview-item">
+                      <span class="p-label">問卷主題：</span>
+                      <span class="p-value highlight">{{ currentSurvey.title }}</span>
+                    </div>
+                    <div class="preview-item">
+                      <span class="p-label">類型：</span>
+                      <span class="p-value tag">{{ currentSurvey.type }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="preview-row single">
+                    <div class="preview-item">
+                      <span class="p-label">詳細說明：</span>
+                      <div class="p-value description-text">{{ currentSurvey.description }}</div>
+                    </div>
+                  </div>
+
+                  <div class="preview-row">
+                    <div class="preview-item">
+                      <span class="p-label">開放期間：</span>
+                      <span class="p-value date-range">
+                        <i class="far fa-calendar-alt"></i> {{ currentSurvey.startDate }} 
+                        <span class="to">至</span> 
+                        <i class="far fa-calendar-alt"></i> {{ currentSurvey.endDate }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -55,30 +133,135 @@
     @if (activeTab === 'questions') {
       <div class="admin-pane">
         <div class="pane-header">
-          <h2>題目編輯管理</h2>
+          <div class="header-title-context">
+            <h2>題目編輯管理</h2>
+            @if (currentSurvey.title) {
+              <span class="editing-target">正在編輯：<strong>{{ currentSurvey.title }}</strong></span>
+            }
+          </div>
           <div class="pane-actions">
-            <button class="btn-add-quest">+ 新增題目</button>
+            <button class="btn-add-single" (click)="addQuestion('single')">+ 單選題</button>
+            <button class="btn-add-multi" (click)="addQuestion('multi')">+ 多選題</button>
+            <button class="btn-add-text" (click)="addQuestion('text')">+ 簡答題</button>
           </div>
         </div>
-        <div class="pane-body">
-          <p>此處將實作與 05-06.png 一致的題目列表與編輯邏輯。</p>
-          <div class="placeholder-content"></div>
+
+        <div class="pane-body scrollable-content">
+          <!-- A. 基本資料配置區 (固定卡片) -->
+          <div class="admin-big-card basic-info-section">
+            <div class="card-header">
+              <h3>收集使用者基本資料</h3>
+              <span class="hint">勾選後，填寫者必須完成這些欄位才能開始作答。</span>
+            </div>
+            <div class="config-grid">
+              <label class="config-item">
+                <input type="checkbox" [(ngModel)]="basicInfoConfig.name">
+                <span class="config-label">姓名 (必填)</span>
+              </label>
+              <label class="config-item">
+                <input type="checkbox" [(ngModel)]="basicInfoConfig.phone">
+                <span class="config-label">電話 (必填)</span>
+              </label>
+              <label class="config-item">
+                <input type="checkbox" [(ngModel)]="basicInfoConfig.email">
+                <span class="config-label">信箱 (必填)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- B. 動態題目列表 (大卡片式) -->
+          <div class="questions-list">
+            @for (q of questions; track q.id; let i = $index) {
+              <div class="admin-big-card question-card">
+                <div class="card-top">
+                  <span class="quest-index">問題 {{ i + 1 }}</span>
+                  <span class="quest-type-tag" [ngClass]="q.type">
+                    {{ q.type === 'single' ? '單選' : q.type === 'multi' ? '多選' : '簡答' }}
+                  </span>
+                  <button class="btn-remove-quest" (click)="removeQuestion(q.id)">&times;</button>
+                </div>
+
+                <div class="card-content">
+                  <div class="form-group">
+                    <label>題目內容</label>
+                    <input type="text" [(ngModel)]="q.title" placeholder="請輸入問題敘述...">
+                  </div>
+
+                  @if (q.type !== 'text') {
+                    <div class="options-manager">
+                      <label>選項設定</label>
+                      @for (opt of q.options; track $index; let optIdx = $index) {
+                        <div class="option-row">
+                          <span class="opt-bullet">{{ optIdx + 1 }}</span>
+                          <input type="text" [(ngModel)]="q.options[optIdx]" placeholder="選項內容">
+                          <button class="btn-del-opt" (click)="removeOption(i, optIdx)">&times;</button>
+                        </div>
+                      }
+                      <button class="btn-add-opt" (click)="addOption(i)">+ 新增選項</button>
+                    </div>
+                  }
+
+                  <div class="special-settings">
+                    @if (q.type === 'multi') {
+                      <div class="setting-item">
+                        <label>最多可選項數</label>
+                        <input type="number" [(ngModel)]="q.maxSelectable" min="1" [max]="q.options.length">
+                      </div>
+                    }
+                    @if (q.type === 'text') {
+                      <div class="setting-item">
+                        <label>最大字數限制</label>
+                        <input type="number" [(ngModel)]="q.maxCharacters" min="10">
+                      </div>
+                    }
+                    <label class="required-toggle">
+                      <input type="checkbox" [(ngModel)]="q.isRequired"> 設為必填
+                    </label>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-questions">
+                <p>目前尚未新增任何題目，請點擊上方按鈕開始建立。</p>
+              </div>
+            }
+          </div>
+
+          <!-- C. 下層：待處理問卷工作台 -->
+          <div class="draft-workstation">
+            <div class="workstation-header">
+              <h3><i class="fas fa-folder-open"></i> 待處理問卷工作台</h3>
+              <p>目前系統中非發佈狀態的問卷 (可快速載入編輯)</p>
+            </div>
+            <div class="draft-grid">
+              <div class="draft-item">
+                <span class="status-dot draft"></span>
+                <span class="title">天下第一武道大會場地標案</span>
+                <button class="btn-load">載入編輯</button>
+              </div>
+              <div class="draft-item">
+                <span class="status-dot saved"></span>
+                <span class="title">鬼殺隊巡邏滿意度調查</span>
+                <button class="btn-load">載入編輯</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     }
 
-    <!-- 3. 問卷回饋區 -->
+    <!-- 3. 問卷回饋區 (預留) -->
     @if (activeTab === 'feedback') {
       <div class="admin-pane">
         <div class="empty-state">
           <div class="icon">📝</div>
           <h3>問卷回饋數據</h3>
-          <p>目前尚未串接後端 API，回饋資料載入中...</p>
+          <p>目前尚未串接後端 API，回饋資料將於後端完成後載入。</p>
         </div>
       </div>
     }
 
-    <!-- 4. 統計區 -->
+    <!-- 4. 統計區 (預留) -->
     @if (activeTab === 'stats') {
       <div class="admin-pane">
         <div class="empty-state">

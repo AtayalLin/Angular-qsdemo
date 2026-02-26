@@ -6,78 +6,98 @@
       <div class="icon-circle">
         <i class="fas fa-user-plus"></i>
       </div>
-      <h2>管理員註冊</h2>
+      <h2>會員註冊</h2>
       <p>建立帳號以存取問卷管理權限</p>
     </div>
 
     <form #regForm="ngForm" (ngSubmit)="onRegister()">
-      
       <div class="reg-input-group">
         <label>帳號 Account</label>
-        <input 
-          type="email" 
+        <input
+          type="email"
           name="account"
-          [(ngModel)]="regData.account" 
-          placeholder="請輸入 Email 帳號" 
+          [(ngModel)]="regData.account"
+          placeholder="請輸入 Email 帳號"
           required
         />
       </div>
 
       <div class="reg-input-group">
         <label>姓名 Name</label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           name="name"
-          [(ngModel)]="regData.name" 
-          placeholder="請輸入真實姓名" 
+          [(ngModel)]="regData.name"
+          placeholder="請輸入真實姓名"
           required
         />
       </div>
 
- <div class="reg-input-group">
-  <label>密碼 Password</label>
-  <div class="password-wrapper">
-    <input 
-      [type]="showPassword ? 'text' : 'password'" 
-      name="password"
-      [(ngModel)]="regData.password" 
-      placeholder="請設定登入密碼" 
-      required
-      minlength="8"
-    />
-    <button type="button" class="toggle-eye" (click)="showPassword = !showPassword">
-      <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-    </button>
-  </div>
-</div>
+      <div class="reg-input-group">
+        <label>密碼 Password</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="regData.password"
+            placeholder="請設定登入密碼"
+            required
+            minlength="8"
+          />
+          <button
+            type="button"
+            class="toggle-eye"
+            (click)="showPassword = !showPassword"
+          >
+            <i
+              class="fas"
+              [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+            ></i>
+          </button>
+        </div>
+      </div>
 
-<div class="reg-input-group">
-  <label>確認密碼 Confirm Password</label>
-  <div class="password-wrapper">
-    <input 
-      [type]="showConfirmPassword ? 'text' : 'password'" 
-      name="confirmPassword"
-      [(ngModel)]="regData.confirmPassword" 
-      placeholder="請再次輸入密碼" 
-      required
-    />
-    <button type="button" class="toggle-eye" (click)="showConfirmPassword = !showConfirmPassword">
-      <i class="fas" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-    </button>
-  </div>
-  @if (regData.confirmPassword && regData.password !== regData.confirmPassword) {
-    <span class="reg-error">兩次密碼輸入不一致</span>
-  }
-</div>
+      <div class="reg-input-group">
+        <label>確認密碼 Confirm Password</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            name="confirmPassword"
+            [(ngModel)]="regData.confirmPassword"
+            placeholder="請再次輸入密碼"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-eye"
+            (click)="showConfirmPassword = !showConfirmPassword"
+          >
+            <i
+              class="fas"
+              [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+            ></i>
+          </button>
+        </div>
+        @if (
+          regData.confirmPassword &&
+          regData.password !== regData.confirmPassword
+        ) {
+          <span class="reg-error">兩次密碼輸入不一致</span>
+        }
+      </div>
 
       <div class="reg-footer">
         <button type="submit" class="reg-btn-main" [disabled]="regForm.invalid">
           確認註冊
         </button>
-        
+
         <div class="reg-sub-links">
-          <button type="button" class="reg-btn-link" (click)="goBack()">返回列表</button>
-          <button type="button" class="reg-btn-link" (click)="goToLogin()">已有帳號？登入</button>
+          <button type="button" class="reg-btn-link" (click)="goBack()">
+            返回列表
+          </button>
+          <button type="button" class="reg-btn-link" (click)="goToLogin()">
+            已有帳號？登入
+          </button>
         </div>
       </div>
     </form>

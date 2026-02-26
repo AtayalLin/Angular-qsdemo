@@ -109,6 +109,175 @@
 }
 
 /* ===============================
+   彈窗遮罩 (恢復原始樣式)
+================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(109, 76, 65, 0.4); /* 原始深棕色半透明 */
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* ===============================
+   彈窗主體
+================================ */
+.modal-content {
+  background: rgba(255, 248, 240, 0.98);
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(231, 111, 81, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: modalFadeIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    color: #6d4c41;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+}
+
+.close-x {
+  background: #ffe6d8;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #e76f51;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #e76f51;
+    color: #fff;
+  }
+}
+
+/* ===============================
+   登入表單元件
+================================ */
+.input-group {
+  margin-bottom: 18px;
+  text-align: left;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    color: #b08a74;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid #f0c4a8;
+    background-color: #fffaf6;
+    font-size: 1rem;
+    color: #6d4c41;
+    box-sizing: border-box;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #f4a261;
+      box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.15);
+      background-color: #ffffff;
+    }
+  }
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input { padding-right: 45px; }
+
+  .toggle-eye {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #b08a74;
+    padding: 5px;
+    &:hover { color: #e76f51; }
+  }
+}
+
+.modal-footer {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-main {
+  width: 100%;
+  height: 48px;
+  border-radius: 24px;
+  border: none;
+  background: linear-gradient(135deg, #f4a261, #e76f51);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25);
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
+  }
+}
+
+.footer-sub-btns {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #b08a74;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s;
+  &:hover { color: #e76f51; text-decoration: underline; }
+}
+
+/* ===============================
    搜尋區 (結構化更新)
 ================================ */
 .search-filters {
@@ -421,6 +590,85 @@
 .page-nav-btn {
   background-color: #fffaf6;
   font-weight: bold;
+}
+
+/* ===============================
+   自定義刪除彈窗 (新增)
+================================ */
+.delete-modal {
+  max-width: 450px;
+  text-align: center;
+
+  .modal-body {
+    padding: 20px 0;
+  }
+
+  .warning-icon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+  }
+
+  .target-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e76f51;
+    margin: 15px 0;
+    padding: 10px;
+    background: #fff2e8;
+    border-radius: 8px;
+  }
+
+  .warning-text {
+    font-size: 0.9rem;
+    color: #b08a74;
+    line-height: 1.5;
+  }
+
+  .text-danger {
+    color: #e76f51 !important;
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.btn-cancel {
+  background: #fff;
+  color: #b08a74;
+  border: 1px solid #f0c4a8;
+  height: 44px;
+  border-radius: 22px;
+  padding: 0 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #fffaf6;
+    color: #6d4c41;
+  }
+}
+
+.btn-delete-confirm {
+  background: linear-gradient(135deg, #e76f51, #c0392b);
+  color: #fff;
+  border: none;
+  height: 44px;
+  border-radius: 22px;
+  padding: 0 25px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(231, 111, 81, 0.25);
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(231, 111, 81, 0.35);
+  }
 }
 
 /* RWD 微調 */

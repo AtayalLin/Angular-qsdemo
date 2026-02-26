@@ -18,6 +18,8 @@ export class SurveyListComponent implements OnInit {
 
   // 身分切換：true = 管理者 / false = 使用者
   isAdmin: boolean = false;
+  isLoggedIn: boolean = false; // [新增] 是否為登入狀態
+  currentUser: any = null;     // [新增] 當前使用者資料
 
   searchText = '';
   searchType = '';
@@ -93,6 +95,10 @@ export class SurveyListComponent implements OnInit {
     account: '',
     password: '',
   };
+
+  // --- [新增] 刪除確認彈窗相關變數 ---
+  showDeleteModal = false; // 控制刪除確認彈窗顯示
+  targetSurvey: Survey | null = null; // 暫存準備刪除的問卷資料
 
   ngOnInit(): void {
     // 1. 初始化列表
@@ -257,14 +263,53 @@ export class SurveyListComponent implements OnInit {
     }
   }
 
+  /**
+   * 開啟自定義刪除確認彈窗
+   * 功用：將目標問卷暫存並開啟彈窗，取代原生 confirm 以維持視覺統一。
+   */
   deleteSurvey(id: number) {
-    if (!confirm('確定要刪除這份問卷嗎？')) return;
-    this.surveys = this.surveys.filter((s) => s.id !== id);
-    this.onSearch();
+    const survey = this.surveys.find(s => s.id === id);
+    if (survey) {
+      this.targetSurvey = survey;
+      this.showDeleteModal = true;
+    }
   }
 
+  /**
+   * 執行實際刪除邏輯
+   * 功用：在自定義彈窗點擊「確認」後執行，從陣列移除資料並同步搜尋結果。
+   */
+  confirmDelete() {
+    if (this.targetSurvey) {
+      this.surveys = this.surveys.filter((s) => s.id !== this.targetSurvey?.id);
+      this.onSearch();
+      this.closeDeleteModal();
+      alert('問卷已成功刪除。');
+    }
+  }
+
+  /**
+   * 關閉刪除確認彈窗
+   * 功用：重置刪除狀態，關閉毛玻璃彈窗。
+   */
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.targetSurvey = null;
+  }
+
+  /**
+   * 編輯問卷邏輯
+   * 功用：若為已發佈，模擬切換至暫停填寫狀態並跳轉至管理中心。
+   */
   editSurvey(id: number) {
-    console.log('編輯問卷 ID:', id);
+    const survey = this.surveys.find(s => s.id === id);
+    if (survey && survey.publishStatus === '已發佈') {
+      if (!confirm('此問卷正在進行中，編輯將會暫時停止使用者填寫，確定要繼續嗎？')) return;
+      // 這裡未來會接 API 更新狀態為 '編輯中' 或 '暫停'
+      console.log('問卷狀態已模擬變更為暫停填寫...');
+    }
+    // 跳轉至管理中心，並傳遞 ID 以便後續載入問卷與題目內容
+    this.router.navigate(['/admin'], { queryParams: { id: id } });
   }
 
   goToAdmin() {
@@ -307,9 +352,19 @@ export class SurveyListComponent implements OnInit {
     );
 
     if (user) {
-      alert(`歡迎回來，${user.name} 管理員！`);
-      this.isAdmin = true;
-      localStorage.setItem('isAdmin', 'true');
+      this.isLoggedIn = true;
+      this.currentUser = user;
+      localStorage.setItem('currentUser', JSON.stringify(user));
+
+      if (user.account === 'test@gmail.com') {
+        this.isAdmin = true;
+        localStorage.setItem('isAdmin', 'true');
+        alert(`歡迎回來，${user.name} 管理員！`);
+      } else {
+        this.isAdmin = false;
+        localStorage.removeItem('isAdmin');
+        alert(`您好，${user.name}！歡迎使用問卷系統。`);
+      }
       this.closeLoginModal();
       this.onSearch();
     } else {
@@ -327,9 +382,12 @@ export class SurveyListComponent implements OnInit {
   }
 
   logout() {
-    if (confirm('確定要登出管理員身分嗎？')) {
+    if (confirm('確定要登出嗎？')) {
       this.isAdmin = false;
+      this.isLoggedIn = false;
+      this.currentUser = null;
       localStorage.removeItem('isAdmin');
+      localStorage.removeItem('currentUser');
       this.onSearch();
       alert('已登出');
     }

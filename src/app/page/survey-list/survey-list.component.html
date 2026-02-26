@@ -8,8 +8,8 @@
         問卷管理中心
       </button>
     }
-    <button class="login-btn" (click)="isAdmin ? logout() : openLoginModal()">
-      {{ isAdmin ? "登出後台 (切換使用者)" : "登入後台" }}
+    <button class="login-btn" (click)="isLoggedIn ? logout() : openLoginModal()">
+      {{ isLoggedIn ? (isAdmin ? "登出後台" : "會員登出") : "登入 / 註冊" }}
     </button>
   </div>
 
@@ -17,7 +17,7 @@
     <div class="modal-overlay" (click)="closeLoginModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>管理員登入</h2>
+          <h2>系統登入 Login</h2>
           <button class="close-x" (click)="closeLoginModal()">&times;</button>
         </div>
 
@@ -54,13 +54,13 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn-main" (click)="handleLogin()">登入後台</button>
+          <button class="btn-main" (click)="handleLogin()">登入</button>
           <div class="footer-sub-btns">
             <button class="btn-link" (click)="forgotPassword()">
               忘記密碼？
             </button>
             <button class="btn-link" (click)="registerAdmin()">
-              註冊管理員
+              註冊會員
             </button>
           </div>
         </div>
@@ -82,9 +82,9 @@
     <div class="filter-group">
       <label>時間區間搜尋</label>
       <div class="date-range">
-        <input type="date" [(ngModel)]="startDate" (change)="onSearch()">
+        <input type="date" [(ngModel)]="startDate" (change)="onSearch()" />
         <span>至</span>
-        <input type="date" [(ngModel)]="endDate" (change)="onSearch()">
+        <input type="date" [(ngModel)]="endDate" (change)="onSearch()" />
       </div>
     </div>
 
@@ -132,7 +132,9 @@
 
     @for (survey of paginatedSurveys; track survey.id) {
       <div class="survey-row">
-        <div class="col id">{{ ($index + 1) + (currentPage - 1) * pageSize }}</div>
+        <div class="col id">
+          {{ $index + 1 + (currentPage - 1) * pageSize }}
+        </div>
 
         <div class="col title">{{ survey.title }}</div>
         <div class="col type">{{ survey.type }}</div>
@@ -184,24 +186,22 @@
       </div>
     } @empty {
       <!-- 當前頁面無問卷時顯示 -->
-      <div class="no-data-msg">
-        此頁無問卷
-      </div>
+      <div class="no-data-msg">此頁無問卷</div>
     }
   </div>
 
   <!-- 底部數位分頁區塊：始終顯示 -->
   <div class="pagination-wrapper">
-    <button 
-      class="page-nav-btn" 
-      [disabled]="currentPage === 1" 
+    <button
+      class="page-nav-btn"
+      [disabled]="currentPage === 1"
       (click)="goToPage(1)"
     >
       &laquo;
     </button>
-    <button 
-      class="page-nav-btn" 
-      [disabled]="currentPage === 1" 
+    <button
+      class="page-nav-btn"
+      [disabled]="currentPage === 1"
       (click)="goToPage(currentPage - 1)"
     >
       &lt;
@@ -209,8 +209,8 @@
 
     <div class="page-numbers">
       @for (p of pageNumbers; track p) {
-        <button 
-          class="page-num-btn" 
+        <button
+          class="page-num-btn"
           [class.active]="p === currentPage"
           (click)="goToPage(p)"
         >
@@ -219,19 +219,50 @@
       }
     </div>
 
-    <button 
-      class="page-nav-btn" 
-      [disabled]="currentPage === navMaxPage" 
+    <button
+      class="page-nav-btn"
+      [disabled]="currentPage === navMaxPage"
       (click)="goToPage(currentPage + 1)"
     >
       &gt;
     </button>
-    <button 
-      class="page-nav-btn" 
-      [disabled]="currentPage === navMaxPage" 
+    <button
+      class="page-nav-btn"
+      [disabled]="currentPage === navMaxPage"
       (click)="goToPage(navMaxPage)"
     >
       &raquo;
     </button>
   </div>
+
+  <!-- [新增] 自定義防呆刪除彈窗 -->
+  @if (showDeleteModal) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div
+        class="modal-content delete-modal"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="modal-header">
+          <h2 class="text-danger">確認刪除問卷</h2>
+          <button class="close-x" (click)="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="warning-icon">⚠️</div>
+          <p>您確定要刪除這份問卷嗎？</p>
+          <div class="target-title">「 {{ targetSurvey?.title }} 」</div>
+          <p class="warning-text">
+            刪除後將無法還原，且相關的填答數據也會一併移除。
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeDeleteModal()">
+            取消返回
+          </button>
+          <button class="btn-delete-confirm" (click)="confirmDelete()">
+            確認刪除
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
