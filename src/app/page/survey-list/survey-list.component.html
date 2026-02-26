@@ -7,9 +7,15 @@
       <button class="admin-link-btn" [routerLink]="['/admin']">
         問卷管理中心
       </button>
+      <button class="admin-link-btn" (click)="logout()">
+        管理員登出
+      </button>
     }
-    <button class="login-btn" (click)="isLoggedIn ? logout() : openLoginModal()">
-      {{ isLoggedIn ? (isAdmin ? "登出後台" : "會員登出") : "登入 / 註冊" }}
+    <button
+      class="login-btn"
+      (click)="isLoggedIn ? logout() : openLoginModal()"
+    >
+      {{ isLoggedIn ? (isAdmin ? "已登入 (Admin)" : "會員登出") : "登入 / 註冊" }}
     </button>
   </div>
 
@@ -63,9 +69,7 @@
             <button class="btn-link" (click)="forgotPassword()">
               忘記密碼？
             </button>
-            <button class="btn-link" (click)="registerAdmin()">
-              註冊會員
-            </button>
+            <button class="btn-link" (click)="registerAdmin()">註冊會員</button>
           </div>
         </div>
       </div>
