@@ -271,13 +271,35 @@
             刪除後將無法還原，且相關的填答數據也會一併移除。
           </p>
         </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" (click)="closeDeleteModal()">
+        <!-- [修正] 改為左右並排佈局 -->
+        <div class="modal-footer horizontal">
+          <button class="btn-cancel-logout" (click)="closeDeleteModal()">
             取消返回
           </button>
           <button class="btn-delete-confirm" (click)="confirmDelete()">
             確認刪除
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- [新增] 自定義編輯確認彈窗 -->
+  @if (showEditModal) {
+    <div class="modal-overlay" (click)="closeEditModal()">
+      <div class="modal-content edit-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>暫停填寫提醒</h2>
+          <button class="close-x" (click)="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="edit-icon">⚙️</div>
+          <p class="modal-text">此問卷正在進行中</p>
+          <p class="sub-text">進入編輯將會暫時停止其他使用者進入填寫，<br>您確定要繼續嗎？</p>
+        </div>
+        <div class="modal-footer horizontal">
+          <button class="btn-cancel-logout" (click)="closeEditModal()">取消返回</button>
+          <button class="btn-confirm-edit" (click)="confirmEdit()">確認編輯</button>
         </div>
       </div>
     </div>

@@ -639,7 +639,7 @@
   .warning-icon {
     font-size: 3.5rem;
     margin-bottom: 15px;
-    animation: pulse 2s infinite;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
   }
 
   .target-title {
@@ -661,12 +661,6 @@
   .text-danger {
     color: #e76f51 !important;
   }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
 }
 
 .btn-cancel {
@@ -791,6 +785,28 @@
   border: none !important;
   box-shadow: 0 4px 12px rgba(231, 111, 81, 0.2) !important;
   &:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(231, 111, 81, 0.3) !important; }
+}
+
+/* ===============================
+   自定義編輯確認彈窗 (新增)
+================================ */
+.edit-modal {
+  max-width: 420px;
+  .edit-icon { font-size: 3.5rem; margin-bottom: 15px; }
+}
+
+.btn-confirm-edit {
+  background: linear-gradient(135deg, #2a9d8f, #264653) !important;
+  color: #ffffff !important;
+  border: none !important;
+  height: 44px;
+  border-radius: 22px;
+  padding: 0 25px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(42, 157, 143, 0.25) !important;
+  transition: all 0.2s;
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(42, 157, 143, 0.35) !important; }
 }
 
 /* RWD 微調 */
