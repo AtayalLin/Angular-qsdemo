@@ -89,6 +89,7 @@ export class SurveyListComponent implements OnInit {
 
   // --- 彈窗相關變數 ---
   showLoginModal = false;
+  showLogoutModal = false; // [新增] 控制登出確認彈窗顯示
   showPassword = false; // [新增] 控制密碼顯示/隱藏的狀態
 
   loginForm = {
@@ -390,15 +391,33 @@ export class SurveyListComponent implements OnInit {
     this.router.navigate(['/register']);
   }
 
+  /**
+   * 開啟登出確認彈窗
+   * 功用：取代原生 confirm，顯示自定義專業彈窗。
+   */
   logout() {
-    if (confirm('確定要登出嗎？')) {
-      this.isAdmin = false;
-      this.isLoggedIn = false;
-      this.currentUser = null;
-      localStorage.removeItem('isAdmin');
-      localStorage.removeItem('currentUser');
-      this.onSearch();
-      alert('已登出');
-    }
+    this.showLogoutModal = true;
+  }
+
+  /**
+   * 執行實際登出邏輯
+   * 功用：清除所有登入狀態、快取，並關閉彈窗。
+   */
+  confirmLogout() {
+    this.isAdmin = false;
+    this.isLoggedIn = false;
+    this.currentUser = null;
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('currentUser');
+    this.showLogoutModal = false; // 關閉彈窗
+    this.onSearch();
+    alert('您已安全登出系統。');
+  }
+
+  /**
+   * 關閉登出確認彈窗
+   */
+  closeLogoutModal() {
+    this.showLogoutModal = false;
   }
 }

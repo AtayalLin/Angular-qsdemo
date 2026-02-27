@@ -282,4 +282,25 @@
       </div>
     </div>
   }
+
+  <!-- [新增] 自定義登出確認彈窗 -->
+  @if (showLogoutModal) {
+    <div class="modal-overlay logout-overlay" (click)="closeLogoutModal()">
+      <div class="modal-content logout-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>確認登出 Logout</h2>
+          <button class="close-x" (click)="closeLogoutModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="logout-icon">👋</div>
+          <p class="modal-text">您確定要登出目前的帳戶嗎？</p>
+          <p class="sub-text">登出後，部分管理與會員功能將受限。</p>
+        </div>
+        <div class="modal-footer horizontal">
+          <button class="btn-cancel-logout" (click)="closeLogoutModal()">取消返回</button>
+          <button class="btn-confirm-logout" (click)="confirmLogout()">確認登出</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
