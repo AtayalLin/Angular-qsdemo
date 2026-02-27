@@ -407,3 +407,17 @@
 }
 
 /* 題目卡片 */
+.empty-state, .empty-workstation {
+  text-align: center;
+  padding: 80px;
+  color: #b08a74;
+  background: #ffffff;
+  border: 2px dashed #f0c4a8;
+  border-radius: 15px;
+  
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+}
