@@ -99,6 +99,30 @@ export class SurveyService {
         },
       ],
     },
+    {
+      id: 7,
+      title: '2026 台北國際電玩展滿意度追蹤',
+      type: '滿意度',
+      description: '感謝您參與本次盛會，請協助我們改進。',
+      startDate: '2026-03-01',
+      endDate: '2026-03-15',
+      participants: 0,
+      publishStatus: '已儲存尚未發佈',
+      questions: [
+        { id: 1, title: '您對本次攤位安排滿意嗎？', type: 'single', options: ['滿意', '普通', '不滿意'] }
+      ]
+    },
+    {
+      id: 8,
+      title: '智慧家居設備使用習慣調查 (草稿)',
+      type: '市場調查',
+      description: '探索智慧家庭的無限可能。',
+      startDate: '2026-04-01',
+      endDate: '2026-04-30',
+      participants: 0,
+      publishStatus: '草稿',
+      questions: []
+    }
   ];
 
   importMockDataToDatabase(): Observable<any> {
