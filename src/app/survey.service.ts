@@ -42,6 +42,61 @@ export class SurveyService {
 
   private surveys: Survey[] = [
     {
+      id: 1,
+      title: 'iHome 第514代使用者滿意度調查',
+      type: '滿意度',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
+      startDate: '2175-11-23',
+      endDate: '2175-12-23',
+      participants: 120,
+      publishStatus: '已發佈',
+      questions: [],
+    },
+    {
+      id: 2,
+      title: 'iHome 新功能回饋意見',
+      type: '問卷',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
+      startDate: '2175-07-08',
+      endDate: '2175-09-15',
+      participants: 45,
+      publishStatus: '已發佈',
+      questions: [],
+    },
+    {
+      id: 3,
+      title: '鄉里活動中心活動選拔投票',
+      type: '活動',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
+      startDate: '2024-09-11',
+      endDate: '2024-09-31',
+      participants: 85,
+      publishStatus: '已發佈',
+      questions: [],
+    },
+    {
+      id: 4,
+      title: '「第24屆天下第一武道大會場地」各家建商標案',
+      type: '回饋',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
+      startDate: '0767-04-25',
+      endDate: '0767-05-01',
+      participants: 77,
+      publishStatus: '草稿',
+      questions: [],
+    },
+    {
+      id: 5,
+      title: '鬼殺隊巡邏滿意度調查',
+      type: '滿意度',
+      description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。',
+      startDate: '1918-01-14',
+      endDate: '1918-02-14',
+      participants: 200,
+      publishStatus: '已儲存尚未發佈',
+      questions: [],
+    },
+    {
       id: 6,
       title: '87世紀遊戲主機／平台市場調查',
       type: '市場調查',
@@ -99,30 +154,6 @@ export class SurveyService {
         },
       ],
     },
-    {
-      id: 7,
-      title: '2026 台北國際電玩展滿意度追蹤',
-      type: '滿意度',
-      description: '感謝您參與本次盛會，請協助我們改進。',
-      startDate: '2026-03-01',
-      endDate: '2026-03-15',
-      participants: 0,
-      publishStatus: '已儲存尚未發佈',
-      questions: [
-        { id: 1, title: '您對本次攤位安排滿意嗎？', type: 'single', options: ['滿意', '普通', '不滿意'] }
-      ]
-    },
-    {
-      id: 8,
-      title: '智慧家居設備使用習慣調查 (草稿)',
-      type: '市場調查',
-      description: '探索智慧家庭的無限可能。',
-      startDate: '2026-04-01',
-      endDate: '2026-04-30',
-      participants: 0,
-      publishStatus: '草稿',
-      questions: []
-    }
   ];
 
   importMockDataToDatabase(): Observable<any> {

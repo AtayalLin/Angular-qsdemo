@@ -16,7 +16,7 @@ export class SurveyListComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private surveyService = inject(SurveyService);
 
-  // 身分切換：true = 管理者 / false = 使用者
+  // 身分切換
   isAdmin: boolean = false;
   isLoggedIn: boolean = false; 
   currentUser: any = null;     
@@ -36,8 +36,7 @@ export class SurveyListComponent implements OnInit {
 
   get paginatedSurveys() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
-    const items = this.filteredSurveys.slice(startIndex, startIndex + this.pageSize);
-    return items;
+    return this.filteredSurveys.slice(startIndex, startIndex + this.pageSize);
   }
 
   get actualTotalPages(): number {
@@ -75,52 +74,42 @@ export class SurveyListComponent implements OnInit {
     password: '',
   };
 
-  // --- [新增] 刪除確認彈窗相關變數 ---
   showDeleteModal = false; 
   targetSurvey: Survey | null = null; 
 
-  // --- [新增] 編輯確認彈窗相關變數 ---
   showEditModal = false;   
   targetEditId: number | null = null; 
 
   ngOnInit(): void {
     this.fetchSurveys();
+    
+    // 檢查登入狀態持久化
     const savedLogin = localStorage.getItem('isAdmin');
     const savedUser = localStorage.getItem('currentUser');
-    if (savedLogin === 'true') {
-      this.isAdmin = true;
-      this.isLoggedIn = true;
-    }
-    if (savedUser) {
-      this.currentUser = JSON.parse(savedUser);
-      this.isLoggedIn = true;
-    }
-    this.onSearch();
+    if (savedLogin === 'true') { this.isAdmin = true; this.isLoggedIn = true; }
+    if (savedUser) { this.currentUser = JSON.parse(savedUser); this.isLoggedIn = true; }
+
     this.route.queryParams.subscribe((params) => {
-      if (params['login'] === 'true') {
-        this.openLoginModal();
-      }
+      if (params['login'] === 'true') { this.openLoginModal(); }
     });
   }
 
+  /**
+   * 向 Service 抓取所有問卷資料
+   * 功用：確保與管理中心的工作台資料來源一致。
+   */
   fetchSurveys(): void {
-    const tempSurveys: Survey[] = [
-      { id: 1, title: 'iHome 第514代使用者滿意度調查', type: '滿意度', startDate: '2175-11-23', endDate: '2175-12-23', participants: 120, publishStatus: '已發佈', questions: [], description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。' },
-      { id: 2, title: 'iHome 新功能回饋意見', type: '問卷', startDate: '2175-07-08', endDate: '2175-09-15', participants: 45, publishStatus: '已發佈', questions: [], description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。' },
-      { id: 3, title: '鄉里活動中心活動選拔投票', type: '活動', startDate: '2024-09-11', endDate: '2024-09-31', participants: 85, publishStatus: '已發佈', questions: [], description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。' },
-      { id: 4, title: '「第24屆天下第一武道大會場地」各家建商標案', type: '回饋', startDate: '767-04-25', endDate: '767-05-01', participants: 77, publishStatus: '草稿', questions: [], description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。' },
-      { id: 5, title: '鬼殺隊巡邏滿意度調查', type: '滿意度', startDate: '1918-01-14', endDate: '1918-02-14', participants: 200, publishStatus: '已儲存尚未發佈', questions: [], description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。' },
-      { id: 6, title: '87世紀遊戲主機／平台市場調查', type: '市場調查', startDate: '2026-02-15', endDate: '2026-12-31', participants: 1200, publishStatus: '已發佈', description: '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。', questions: [{ id: 1, title: '最常使用的平台？', type: 'single', options: ['PS5', 'PC', 'Switch'] }, { id: 2, title: '建議回饋', type: 'text' }] },
-    ];
-    this.surveys = tempSurveys;
-    this.onSearch();
+    this.surveyService.getSurveys().subscribe(list => {
+      this.surveys = list;
+      this.onSearch();
+    });
   }
 
   onImportTestData(): void {
     if (!confirm('是否將假資料「87世紀遊戲主機」導入 MySQL 資料庫？')) return;
     this.surveyService.importMockDataToDatabase().subscribe({
-      next: (res: any) => { if (res.code === 200) alert('成功！'); else alert('失敗'); },
-      error: (err) => alert('連線失敗'),
+      next: (res: any) => { if (res.code === 200) alert('成功'); else alert('失敗'); },
+      error: () => alert('連線失敗'),
     });
   }
 
