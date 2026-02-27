@@ -23,6 +23,7 @@ export class SurveyQuestionComponent implements OnInit {
   showModal = false;
   modalStep: 'confirm' | 'thanks' = 'confirm';
   tempAnswers: any = null;
+  answers: any = {}; // [補上] 宣告 answers 屬性，用於追蹤即時答題狀態以支援承上題邏輯
 
   userInfo = {
     name: '',
