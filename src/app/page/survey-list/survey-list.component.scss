@@ -762,9 +762,11 @@
 
 /* 按鈕排版優化：效能導向 */
 .modal-footer.horizontal {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important; /* 強制改為左右並排，修正垂直堆疊問題 */
   gap: 15px;
   justify-content: center;
+  margin-top: 25px;
 
   button {
     flex: 1;
@@ -772,7 +774,7 @@
     border-radius: 12px;
     font-size: 0.95rem;
     font-weight: 700;
-    transition: background 0.2s, transform 0.1s; /* 縮短轉場時間 */
+    transition: background 0.2s, transform 0.1s;
   }
 }
 
