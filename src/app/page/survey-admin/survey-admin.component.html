@@ -49,7 +49,7 @@
               <button class="btn-next" (click)='goToPreview()'>下一步 (預覽)</button>
             } @else {
               <button class="btn-back-step" (click)='backToEdit()'>返回修改</button>
-              <button class="btn-confirm" (click)='confirmSave()'>確認並前往編輯題目</button>
+              <button class="btn-confirm" (click)='confirmSave()'>確認並儲存資料</button>
             }
           </div>
         </div>
@@ -57,15 +57,14 @@
         <div class="pane-body">
           <div class="form-content-container">
             @if (adminSubStep === 'edit') {
-              <!-- 專業表單佈局 -->
               <div class="admin-form-grid">
                 <div class="form-group col-span-1">
-                  <label for="surveyTitle">問卷名稱 <span class="required">*</span></label>
-                  <input id="surveyTitle" name="title" type="text" [(ngModel)]="currentSurvey.title" placeholder="請輸入問卷標題">
+                  <label for="adminSurveyTitle">問卷名稱 <span class="required">*</span></label>
+                  <input id="adminSurveyTitle" name="surveyTitle" type="text" [(ngModel)]="currentSurvey.title" placeholder="請輸入問卷標題">
                 </div>
                 <div class="form-group col-span-1">
-                  <label for="surveyType">問卷類型 <span class="required">*</span></label>
-                  <select id="surveyType" name="type" [(ngModel)]="currentSurvey.type">
+                  <label for="adminSurveyType">問卷類型 <span class="required">*</span></label>
+                  <select id="adminSurveyType" name="surveyType" [(ngModel)]="currentSurvey.type">
                     <option value="" disabled selected>請選擇類型</option>
                     <option value="滿意度">滿意度</option>
                     <option value="市場調查">市場調查</option>
@@ -76,21 +75,20 @@
                 </div>
 
                 <div class="form-group col-span-2">
-                  <label for="surveyDesc">問卷說明 <span class="required">*</span></label>
-                  <textarea id="surveyDesc" name="description" [(ngModel)]="currentSurvey.description" rows="6" placeholder="請輸入問卷詳細說明內容..."></textarea>
+                  <label for="adminSurveyDesc">問卷說明 <span class="required">*</span></label>
+                  <textarea id="adminSurveyDesc" name="surveyDesc" [(ngModel)]="currentSurvey.description" rows="6" placeholder="請輸入問卷詳細說明內容..."></textarea>
                 </div>
 
                 <div class="form-group col-span-1">
-                  <label for="startDate">開始時間 <span class="required">*</span></label>
-                  <input id="startDate" name="startDate" type="date" [(ngModel)]="currentSurvey.startDate">
+                  <label for="adminStartDate">開始時間 <span class="required">*</span></label>
+                  <input id="adminStartDate" name="startDate" type="date" [(ngModel)]="currentSurvey.startDate">
                 </div>
                 <div class="form-group col-span-1">
-                  <label for="endDate">結束時間 <span class="required">*</span></label>
-                  <input id="endDate" name="endDate" type="date" [(ngModel)]="currentSurvey.endDate">
+                  <label for="adminEndDate">結束時間 <span class="required">*</span></label>
+                  <input id="adminEndDate" name="endDate" type="date" [(ngModel)]="currentSurvey.endDate">
                 </div>
               </div>
             } @else {
-              <!-- 專業預覽佈局 -->
               <div class="admin-preview-layout">
                 <div class="preview-card">
                   <div class="preview-row">
@@ -103,22 +101,16 @@
                       <span class="p-value tag">{{ currentSurvey.type }}</span>
                     </div>
                   </div>
-                  
                   <div class="preview-row single">
                     <div class="preview-item">
                       <span class="p-label">詳細說明：</span>
                       <div class="p-value description-text">{{ currentSurvey.description }}</div>
                     </div>
                   </div>
-
                   <div class="preview-row">
                     <div class="preview-item">
                       <span class="p-label">開放期間：</span>
-                      <span class="p-value date-range">
-                        <i class="far fa-calendar-alt"></i> {{ currentSurvey.startDate }} 
-                        <span class="to">至</span> 
-                        <i class="far fa-calendar-alt"></i> {{ currentSurvey.endDate }}
-                      </span>
+                      <span class="p-value date-range">{{ currentSurvey.startDate }} 至 {{ currentSurvey.endDate }}</span>
                     </div>
                   </div>
                 </div>
@@ -143,33 +135,34 @@
             <button class="btn-add-single" (click)="addQuestion('single')">+ 單選題</button>
             <button class="btn-add-multi" (click)="addQuestion('multi')">+ 多選題</button>
             <button class="btn-add-text" (click)="addQuestion('text')">+ 簡答題</button>
+            <button class="btn-confirm" (click)='confirmSave()'>保存所有題目</button>
           </div>
         </div>
 
         <div class="pane-body scrollable-content">
-          <!-- A. 基本資料配置區 (固定卡片) -->
+          <!-- A. 基本資料配置區 -->
           <div class="admin-big-card basic-info-section">
             <div class="card-header">
               <h3>收集使用者基本資料</h3>
               <span class="hint">勾選後，填寫者必須完成這些欄位才能開始作答。</span>
             </div>
             <div class="config-grid">
-              <label class="config-item">
-                <input type="checkbox" [(ngModel)]="basicInfoConfig.name">
+              <label class="config-item" for="collectName">
+                <input type="checkbox" id="collectName" name="collectName" [(ngModel)]="basicInfoConfig.name">
                 <span class="config-label">姓名 (必填)</span>
               </label>
-              <label class="config-item">
-                <input type="checkbox" [(ngModel)]="basicInfoConfig.phone">
+              <label class="config-item" for="collectPhone">
+                <input type="checkbox" id="collectPhone" name="collectPhone" [(ngModel)]="basicInfoConfig.phone">
                 <span class="config-label">電話 (必填)</span>
               </label>
-              <label class="config-item">
-                <input type="checkbox" [(ngModel)]="basicInfoConfig.email">
+              <label class="config-item" for="collectEmail">
+                <input type="checkbox" id="collectEmail" name="collectEmail" [(ngModel)]="basicInfoConfig.email">
                 <span class="config-label">信箱 (必填)</span>
               </label>
             </div>
           </div>
 
-          <!-- B. 動態題目列表 (大卡片式) -->
+          <!-- B. 動態題目列表 -->
           <div class="questions-list">
             @for (q of questions; track q.id; let i = $index) {
               <div class="admin-big-card question-card" [class.is-required-active]="q.isRequired">
@@ -183,8 +176,8 @@
 
                 <div class="card-content">
                   <div class="form-group">
-                    <label>題目內容</label>
-                    <input type="text" [(ngModel)]="q.title" placeholder="請輸入問題敘述...">
+                    <label [for]="'qTitle_' + q.id">題目內容</label>
+                    <input [id]="'qTitle_' + q.id" [name]="'qTitle_' + q.id" type="text" [(ngModel)]="q.title" placeholder="請輸入問題敘述...">
                   </div>
 
                   @if (q.type !== 'text') {
@@ -193,7 +186,7 @@
                       @for (opt of q.options; track $index; let optIdx = $index) {
                         <div class="option-row">
                           <span class="opt-bullet">{{ optIdx + 1 }}</span>
-                          <input type="text" [(ngModel)]="q.options[optIdx]" placeholder="選項內容">
+                          <input [id]="'q' + q.id + 'Opt_' + optIdx" [name]="'q' + q.id + 'Opt_' + optIdx" type="text" [(ngModel)]="q.options[optIdx]" placeholder="選項內容">
                           <button class="btn-del-opt" (click)="removeOption(i, optIdx)">&times;</button>
                         </div>
                       }
@@ -204,18 +197,18 @@
                   <div class="special-settings">
                     @if (q.type === 'multi') {
                       <div class="setting-item">
-                        <label>最多可選項數</label>
-                        <input type="number" [(ngModel)]="q.maxSelectable" min="1" [max]="q.options.length">
+                        <label [for]="'qMax_' + q.id">最多可選項數</label>
+                        <input [id]="'qMax_' + q.id" type="number" [(ngModel)]="q.maxSelectable" min="1" [max]="q.options.length">
                       </div>
                     }
                     @if (q.type === 'text') {
                       <div class="setting-item">
-                        <label>最大字數限制</label>
-                        <input type="number" [(ngModel)]="q.maxCharacters" min="10">
+                        <label [for]="'qChar_' + q.id">最大字數限制</label>
+                        <input [id]="'qChar_' + q.id" type="number" [(ngModel)]="q.maxCharacters" min="10">
                       </div>
                     }
-                    <label class="required-toggle">
-                      <input type="checkbox" [(ngModel)]="q.isRequired"> 設為必填
+                    <label class="required-toggle" [for]="'qReq_' + q.id">
+                      <input type="checkbox" [id]="'qReq_' + q.id" [(ngModel)]="q.isRequired"> 設為必填
                     </label>
                   </div>
                 </div>
@@ -251,7 +244,7 @@
       </div>
     }
 
-    <!-- 3. 問卷回饋區 (預留) -->
+    <!-- 3. 問卷回饋區 -->
     @if (activeTab === 'feedback') {
       <div class="admin-pane">
         <div class="empty-state">
@@ -262,7 +255,7 @@
       </div>
     }
 
-    <!-- 4. 統計區 (預留) -->
+    <!-- 4. 統計區 -->
     @if (activeTab === 'stats') {
       <div class="admin-pane">
         <div class="empty-state">
