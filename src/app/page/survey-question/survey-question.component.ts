@@ -119,7 +119,7 @@ export class SurveyQuestionComponent implements OnInit {
       userInfo: { ...this.userInfo },
     };
 
-    this.surveyData.questions.forEach((q) => {
+    this.surveyData.questions.forEach((q: any) => {
       const inputName = 'q' + q.id;
       if (q.type === 'single') {
         answers[inputName] = (document.querySelector(`input[name="${inputName}"]:checked`) as HTMLInputElement)?.value || '';
