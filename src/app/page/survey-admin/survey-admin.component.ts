@@ -28,7 +28,7 @@ export interface AdminQuestion {
 })
 export class SurveyAdminComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router); // [新增] 注入 Router 以支援載入時的 URL 更新
+  private router = inject(Router); 
   private surveyService = inject(SurveyService); 
 
   // 目前啟動的頁籤
@@ -55,7 +55,7 @@ export class SurveyAdminComponent implements OnInit {
   // 動態題目列表
   questions: AdminQuestion[] = [];
 
-  // [新增] 待處理工作台問卷清單
+  // 待處理工作台問卷清單
   draftSurveys: Survey[] = [];
 
   ngOnInit(): void {
@@ -73,7 +73,6 @@ export class SurveyAdminComponent implements OnInit {
 
   /**
    * 重新整理工作台列表
-   * 功用：僅顯示「草稿」與「未發佈」的問卷。
    */
   refreshWorkstation(): void {
     this.surveyService.getSurveys().subscribe(list => {
@@ -83,7 +82,6 @@ export class SurveyAdminComponent implements OnInit {
 
   /**
    * 工作台載入編輯方法
-   * 功用：點擊後載入指定問卷至編輯器並更新 URL。
    */
   loadEdit(id: number): void {
     this.router.navigate([], {
@@ -92,19 +90,17 @@ export class SurveyAdminComponent implements OnInit {
       queryParamsHandling: 'merge'
     });
     this.loadSurveyData(id);
-    // 導向至「問卷設定」標籤以便開始編輯
     this.activeTab = 'survey';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /**
-   * 載入特定問卷資料並進行格式轉換
-   * 功用：將符合 MySQL 規格的資料轉化為編輯器格式。
+   * 載入特定問卷資料並進行格式轉換 (DB -> UI)
    */
   private loadSurveyData(id: number): void {
     this.surveyService.getSurveyById(id).subscribe((survey: Survey | undefined) => {
       if (survey) {
-        const initialDescription = '請分享您的看法，我們將依據回饋打造次世代的遊戲體驗。';
+        const initialDescription = survey.description || '請分享您的看法，我們將依據回饋打造更好的體驗。';
         this.currentSurvey = {
           id: survey.id,
           title: survey.title,
@@ -114,7 +110,7 @@ export class SurveyAdminComponent implements OnInit {
           endDate: survey.endDate
         };
 
-        // 模擬基本資料配置連動
+        // 模擬基本資料配置
         this.basicInfoConfig = {
           name: true,
           phone: survey.id % 2 === 0,
@@ -146,7 +142,6 @@ export class SurveyAdminComponent implements OnInit {
             return mappedQuest;
           });
         }
-        console.log(`問卷「${survey.title}」已載入工作台。`);
       }
     });
   }
@@ -203,8 +198,41 @@ export class SurveyAdminComponent implements OnInit {
     this.adminSubStep = 'edit';
   }
 
+  /**
+   * 執行出庫資料序列化並模擬儲存 (UI -> DB)
+   * 功用：將編輯器中的結構化資料，轉換回符合 MySQL 與 Eclipse 規範的 JSON 格式。
+   */
   confirmSave(): void {
-    alert('問卷設定已確認！現在請開始編輯題目。');
+    // 1. 執行出庫轉換 (Serialization)
+    const payload = {
+      id: this.currentSurvey.id,
+      title: this.currentSurvey.title,
+      description: this.currentSurvey.type, // 映射邏輯：類型存入 description
+      intro: this.currentSurvey.description, // 詳細說明
+      startDate: this.currentSurvey.startDate,
+      endDate: this.currentSurvey.endDate,
+      
+      // 轉換基本資料配置為 JSON 字串
+      basic_info_config: JSON.stringify(this.basicInfoConfig),
+      
+      // 轉換題目列表
+      questionsList: this.questions.map(q => ({
+        question_id: q.id,
+        question: q.title,
+        type: q.type === 'multi' ? 'multiple' : q.type,
+        is_required: q.isRequired,
+        options: q.options ? q.options.join(';') : '',
+        max_selectable: q.maxSelectable || null,
+        max_characters: q.maxCharacters || null
+      }))
+    };
+
+    console.log('--- [Eclipse/MySQL 對接 Payload 輸出] ---');
+    console.log(payload);
+    console.log('------------------------------------------');
+
+    alert('問卷資料已成功序列化！格式已對齊 MySQL 規範，請查看控制台 (F12) 的輸出內容。');
+    
     this.activeTab = 'questions';
     this.adminSubStep = 'edit';
   }
