@@ -4,7 +4,6 @@
 <div class="result-page">
     <section class="survey-header">
         <h1 class="survey-title">{{ surveyData.title }}</h1>
-        <!-- [修正] 讀取動態說明，並給予預設值 -->
         <p class="survey-intro">{{ surveyData.description || '請分享您的看法，我們將依據回饋打造更好的體驗。' }}</p>
         <div class="survey-meta">
             <span>調查期間：{{ surveyData.startDate }} ～ {{ surveyData.endDate }}</span>
@@ -62,9 +61,10 @@
             <div class="list-layout">
                 @switch (q.type) {
                     @case ('single') {
-                        @for (opt of q.options || []; track opt) {
-                        <label class="custom-option">
-                            <input type="radio" [name]="'q' + q.id" [value]="opt" 
+                        @for (opt of q.options || []; track opt; let optIdx = $index) {
+                        <!-- [修正] 透過 for 與 id 建立明確關聯，功用：點擊文字即可選中選項 -->
+                        <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
+                            <input type="radio" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt" 
                                 [disabled]="isQuestionDisabled(q)"
                                 (change)="onAnswerChange(q.id, $event, 'single')">
                             <div class="option-box">{{ opt }}</div>
@@ -72,9 +72,9 @@
                         }
                     }
                     @case ('multiple') {
-                        @for (opt of q.options || []; track opt) {
-                        <label class="custom-option">
-                            <input type="checkbox" [name]="'q' + q.id" [value]="opt"
+                        @for (opt of q.options || []; track opt; let optIdx = $index) {
+                        <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
+                            <input type="checkbox" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt"
                                 [disabled]="isQuestionDisabled(q)"
                                 (change)="onAnswerChange(q.id, $event, 'multiple')">
                             <div class="option-box">{{ opt }}</div>
@@ -82,7 +82,7 @@
                         }
                     }
                     @case ('text') {
-                        <textarea class="custom-textarea" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."
+                        <textarea class="custom-textarea" [id]="'q' + q.id" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."
                             [disabled]="isQuestionDisabled(q)"
                             (input)="onAnswerChange(q.id, $event, 'text')"></textarea>
                     }
