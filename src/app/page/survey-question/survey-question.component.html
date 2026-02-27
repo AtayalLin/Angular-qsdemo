@@ -48,13 +48,15 @@
         }
 
         @for (q of surveyData.questions; track q.id; let i = $index) {
-        <div class="question-card">
+        <div class="question-card" [class.card-disabled]="isQuestionDisabled(q)">
             <div class="question-head">
                 <span class="question-type" [ngClass]="q.type">
-                    <!-- [修正] 補上三元運算子的 ? 符號，功用：修復 HTML 語法錯誤 -->
                     {{ q.type === 'single' ? '單選題' : q.type === 'multiple' ? '複選題' : '開放題' }}
                 </span>
                 <h3>Q{{ i + 1 }}：{{ q.title }}</h3>
+                @if (isQuestionDisabled(q)) {
+                    <span class="lock-hint"><i class="fas fa-lock"></i> 請先完成關聯題目以解鎖</span>
+                }
             </div>
 
             <div class="list-layout">
@@ -62,7 +64,9 @@
                     @case ('single') {
                         @for (opt of q.options || []; track opt) {
                         <label class="custom-option">
-                            <input type="radio" [name]="'q' + q.id" [value]="opt">
+                            <input type="radio" [name]="'q' + q.id" [value]="opt" 
+                                [disabled]="isQuestionDisabled(q)"
+                                (change)="onAnswerChange(q.id, $event, 'single')">
                             <div class="option-box">{{ opt }}</div>
                         </label>
                         }
@@ -70,13 +74,17 @@
                     @case ('multiple') {
                         @for (opt of q.options || []; track opt) {
                         <label class="custom-option">
-                            <input type="checkbox" [name]="'q' + q.id" [value]="opt">
+                            <input type="checkbox" [name]="'q' + q.id" [value]="opt"
+                                [disabled]="isQuestionDisabled(q)"
+                                (change)="onAnswerChange(q.id, $event, 'multiple')">
                             <div class="option-box">{{ opt }}</div>
                         </label>
                         }
                     }
                     @case ('text') {
-                        <textarea class="custom-textarea" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."></textarea>
+                        <textarea class="custom-textarea" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."
+                            [disabled]="isQuestionDisabled(q)"
+                            (input)="onAnswerChange(q.id, $event, 'text')"></textarea>
                     }
                 }
             </div>

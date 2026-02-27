@@ -171,6 +171,17 @@
                   <span class="quest-type-tag" [ngClass]="q.type">
                     {{ q.type === 'single' ? '單選' : q.type === 'multi' ? '多選' : '簡答' }}
                   </span>
+                  
+                  <!-- [新增] 排序按鈕組 -->
+                  <div class="order-actions">
+                    <button class="btn-move" (click)="moveQuestion(i, -1)" [disabled]="i === 0" title="向上移動">
+                      <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <button class="btn-move" (click)="moveQuestion(i, 1)" [disabled]="i === questions.length - 1" title="向下移動">
+                      <i class="fas fa-chevron-down"></i>
+                    </button>
+                  </div>
+
                   <button class="btn-remove-quest" (click)="removeQuestion(q.id)">&times;</button>
                 </div>
 
@@ -207,8 +218,29 @@
                         <input [id]="'qChar_' + q.id" type="number" [(ngModel)]="q.maxCharacters" min="10">
                       </div>
                     }
-                    <label class="required-toggle" [for]="'qReq_' + q.id">
-                      <input type="checkbox" [id]="'qReq_' + q.id" [(ngModel)]="q.isRequired"> 設為必填
+
+                    <!-- [新增] 承上題設定區 -->
+                    <div class="setting-item dependency-config">
+                      <label class="checkbox-label" [for]="'qDep_' + q.id">
+                        <input type="checkbox" [id]="'qDep_' + q.id" [(ngModel)]="q.isDependent" (change)="toggleDependency(i)"> 
+                        此為承上題
+                      </label>
+                      
+                      @if (q.isDependent) {
+                        <select [(ngModel)]="q.parentId" class="parent-select">
+                          <option [ngValue]="null" disabled>請選擇關聯題目</option>
+                          @for (prevQ of questions; track prevQ.id; let prevIdx = $index) {
+                            @if (prevIdx < i) {
+                              <option [ngValue]="prevQ.id">關聯至問題 {{ prevIdx + 1 }}</option>
+                            }
+                          }
+                        </select>
+                      }
+                    </div>
+
+                    <label class="required-toggle" [for]="'qReq_' + q.id" [class.disabled-label]="q.isDependent">
+                      <input type="checkbox" [id]="'qReq_' + q.id" [(ngModel)]="q.isRequired" [disabled]="q.isDependent"> 
+                      設為必填
                     </label>
                   </div>
                 </div>

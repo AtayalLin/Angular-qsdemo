@@ -108,10 +108,38 @@
     backdrop-filter: blur(8px);
     border-radius: 20px;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    transition: all 0.4s ease; /* 延長時間讓解鎖效果更流暢 */
+
+    /* [新增] 承上題禁用樣式 */
+    &.card-disabled {
+        opacity: 0.55;
+        background: rgba(240, 240, 240, 0.8);
+        pointer-events: none; /* 防止所有滑鼠行為 */
+        filter: grayscale(0.4);
+        transform: scale(0.98); /* 稍微縮小表示未啟用 */
+    }
 }
 
-.question-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.question-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    /* [新增] 鎖定提示樣式 */
+    .lock-hint {
+        margin-left: auto;
+        font-size: 0.8rem;
+        color: #e76f51;
+        background: #fff2e8;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+}
 .question-head h3 { font-size: 1.05rem; font-weight: 600; margin: 0; color: #6d4c41; }
 
 .question-type { font-size: 0.75rem; padding: 4px 12px; border-radius: 999px; font-weight: 500; letter-spacing: 0.5px; }

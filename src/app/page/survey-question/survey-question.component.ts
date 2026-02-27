@@ -91,6 +91,38 @@ export class SurveyQuestionComponent implements OnInit {
     this.showModal = true;
   }
 
+  /**
+   * 判定題目是否應被禁用 (承上題邏輯)
+   * 功用：檢查該題是否依賴於前一題，且前一題是否尚未完成作答。
+   */
+  isQuestionDisabled(q: any): boolean {
+    if (!q.isDependent || !q.parentId) return false;
+
+    // 取得父題目的答案
+    const parentAnswer = this.answers['q' + q.parentId];
+
+    // 檢查父題目是否有值 (支援陣列或字串)
+    const hasValue = Array.isArray(parentAnswer) 
+      ? parentAnswer.length > 0 
+      : !!parentAnswer && parentAnswer.trim() !== '';
+
+    return !hasValue; // 若無值則禁用
+  }
+
+  /**
+   * 處理輸入變更
+   * 功用：當使用者作答時，更新答案物件以觸發承上題的即時解鎖。
+   */
+  onAnswerChange(questId: number, event: any, type: string): void {
+    const key = 'q' + questId;
+    if (type === 'single' || type === 'text') {
+      this.answers[key] = event.target.value;
+    } else if (type === 'multiple') {
+      // 處理多選：使用 document 原生抓取，因為目前的資料流較為分散
+      this.answers[key] = Array.from(document.querySelectorAll(`input[name="${key}"]:checked`)).map((el: any) => el.value);
+    }
+  }
+
   finalSubmit() {
     this.isSubmitting = true;
     setTimeout(() => {
