@@ -4,7 +4,7 @@
   <!-- 右上角按鈕組：將管理中心與登入按鈕並排 -->
   <div class="top-actions">
     @if (isLoggedIn) {
-      <span class="user-welcome">您好, <strong>{{ currentUser?.name }}</strong></span>
+      <span class="user-welcome">您好, <strong> {{ currentUser?.name }}</strong></span>
       
       @if (isAdmin) {
         <button class="admin-link-btn" [routerLink]="['/admin']">

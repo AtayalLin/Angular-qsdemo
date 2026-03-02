@@ -19,21 +19,18 @@ export class AppComponent implements OnInit {
    */
   private seedTestAccount(): void {
     const testAccount = {
-      account: 'test@gmail.com', // 預設測試帳號
-      name: '測試開發者',        // 預設顯示名稱
-      password: '123456789'      // 預設測試密碼
+      account: 'test@gmail.com', // 全域通用測試管理員帳號
+      name: '超級管理員',        // 顯示名稱
+      password: '123456789'      // 預設密碼 (9位數)
     };
 
-    // 從 LocalStorage 取得目前已註冊的使用者列表，若無則回傳空陣列
-    const storedUsers = JSON.parse(localStorage.getItem('survey_users') || '[]');
+    let storedUsers = JSON.parse(localStorage.getItem('survey_users') || '[]');
     
-    // 檢查測試帳號是否已經存在於列表中
-    const isExist = storedUsers.some((u: any) => u.account === testAccount.account);
+    // 移除舊有的 test@gmail.com (如果有)，確保以最新的憑證為準
+    storedUsers = storedUsers.filter((u: any) => u.account !== testAccount.account);
     
-    if (!isExist) {
-      // 若帳號不存在，則將測試帳號加入列表並存回 LocalStorage
-      storedUsers.push(testAccount);
-      localStorage.setItem('survey_users', JSON.stringify(storedUsers));
-    }
+    // 將最新的管理員帳號加入列表
+    storedUsers.push(testAccount);
+    localStorage.setItem('survey_users', JSON.stringify(storedUsers));
   }
 }

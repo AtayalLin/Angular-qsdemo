@@ -193,14 +193,40 @@ export class SurveyListComponent implements OnInit {
   togglePasswordVisibility(): void { this.showPassword = !this.showPassword; }
 
   handleLogin() {
+    // 定義全域通用的超級管理員憑證
+    const ADMIN_CREDENTIALS = { account: 'test@gmail.com', password: '123456789' };
+
+    // 1. 優先檢查是否為超級管理員
+    if (this.loginForm.account === ADMIN_CREDENTIALS.account && this.loginForm.password === ADMIN_CREDENTIALS.password) {
+      const adminUser = { account: ADMIN_CREDENTIALS.account, name: '超級管理員', password: ADMIN_CREDENTIALS.password };
+      this.isLoggedIn = true;
+      this.isAdmin = true;
+      this.currentUser = adminUser;
+      localStorage.setItem('currentUser', JSON.stringify(adminUser));
+      localStorage.setItem('isAdmin', 'true');
+      this.closeLoginModal();
+      this.onSearch();
+      return;
+    }
+
+    // 2. 若非超級管理員，則檢查一般註冊會員 (LocalStorage)
     const users = JSON.parse(localStorage.getItem('survey_users') || '[]');
     const u = users.find((x: any) => x.account === this.loginForm.account && x.password === this.loginForm.password);
+    
     if (u) {
-      this.isLoggedIn = true; this.currentUser = u;
+      this.isLoggedIn = true;
+      this.currentUser = u;
       localStorage.setItem('currentUser', JSON.stringify(u));
-      if (u.account === 'test@gmail.com') { this.isAdmin = true; localStorage.setItem('isAdmin', 'true'); }
-      this.closeLoginModal(); this.onSearch();
-    } else alert('錯誤');
+      // 雙重保險：如果一般使用者列表裡剛好有 test@gmail.com 也給予管理員權限
+      if (u.account === ADMIN_CREDENTIALS.account) {
+        this.isAdmin = true;
+        localStorage.setItem('isAdmin', 'true');
+      }
+      this.closeLoginModal();
+      this.onSearch();
+    } else {
+      alert('帳號或密碼錯誤');
+    }
   }
 
   forgotPassword() { alert('請查看 LocalStorage'); }
