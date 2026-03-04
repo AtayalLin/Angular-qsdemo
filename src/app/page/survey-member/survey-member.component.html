@@ -1,1 +1,219 @@
-<p>survey-member works!</p>
+<div class="bg-wave"></div>
+
+<!-- [重新設計] 右上角專業通知系統 -->
+@if (showToast) {
+  <div class="toast-wrapper">
+    <div class="toast-box">
+      <div class="toast-side-accent"></div>
+      <div class="toast-icon-container">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="toast-main-content">
+        <div class="toast-headline">系統提示 System Notification</div>
+        <div class="toast-subline">{{ toastMsg }}</div>
+      </div>
+      <div class="toast-countdown-bar"></div>
+    </div>
+  </div>
+}
+
+<div class="survey-wrapper">
+  <!-- 頂部標題列 -->
+  <div class="member-header-row">
+    <div class="title-group">
+      <h1>會員中心</h1>
+      <p class="breadcrumb-nav">Member Dashboard / Survey Activity</p>
+    </div>
+    <button class="btn-back-home" (click)="goBack()">
+      <i class="fas fa-reply"></i> 返回首頁
+    </button>
+  </div>
+
+  <div class="member-layout-grid">
+    <!-- 左側：個人資料容器 -->
+    <aside class="profile-container">
+      <div class="avatar-wrapper">
+        <div class="avatar-ring">
+          <img [src]="user.avatar" alt="Avatar" class="user-avatar-img">
+          <button class="avatar-upload-trigger" (click)="changeAvatar()">
+            <i class="fas fa-camera"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (!isEditing) {
+        <div class="user-detail-view">
+          <h2 class="display-name">{{ user.name }}</h2>
+          <div class="info-tag-list">
+            <span class="info-tag"><i class="fas fa-envelope"></i> {{ user.email }}</span>
+            <span class="info-tag"><i class="fas fa-phone"></i> {{ user.phone }}</span>
+            <span class="info-tag date"><i class="fas fa-calendar-check"></i> 註冊於 {{ user.joinDate }}</span>
+          </div>
+          <button class="btn-profile-action" (click)="toggleEdit()">
+            <i class="fas fa-cog"></i> 帳號設定
+          </button>
+        </div>
+      } @else {
+        <div class="user-detail-edit">
+          <div class="form-section">
+            <h3 class="section-title">基本資料</h3>
+            <div class="form-field">
+              <label>顯示名稱 Name</label>
+              <input type="text" [(ngModel)]="editUser.name" placeholder="請輸入姓名">
+            </div>
+            <div class="form-field">
+              <label>電子信箱 Email</label>
+              <input type="email" [(ngModel)]="editUser.email" placeholder="請輸入信箱">
+            </div>
+            <div class="form-field">
+              <label>聯絡電話 Phone</label>
+              <input type="text" [(ngModel)]="editUser.phone" placeholder="請輸入電話">
+            </div>
+          </div>
+
+          <div class="form-section password-section">
+            <h3 class="section-title">安全設定</h3>
+            <div class="form-field">
+              <label>目前密碼 Current Password</label>
+              <div class="password-input-wrapper">
+                <input [type]="showCurrentPassword ? 'text' : 'password'" 
+                       [(ngModel)]="passwordData.current" 
+                       placeholder="輸入目前密碼">
+                <button type="button" class="btn-toggle-eye" (click)="showCurrentPassword = !showCurrentPassword">
+                  <i class="fas" [ngClass]="showCurrentPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>新密碼 New Password</label>
+              <div class="password-input-wrapper">
+                <input [type]="showNewPassword ? 'text' : 'password'" 
+                       [(ngModel)]="passwordData.new" 
+                       placeholder="設定新密碼">
+                <button type="button" class="btn-toggle-eye" (click)="showNewPassword = !showNewPassword">
+                  <i class="fas" [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>確認新密碼 Confirm New Password</label>
+              <div class="password-input-wrapper">
+                <input [type]="showConfirmPassword ? 'text' : 'password'" 
+                       [(ngModel)]="passwordData.confirm" 
+                       placeholder="再次輸入新密碼">
+                <button type="button" class="btn-toggle-eye" (click)="showConfirmPassword = !showConfirmPassword">
+                  <i class="fas" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="edit-btn-group">
+            <button class="btn-save-profile" (click)="saveProfile()">儲存變更</button>
+            <button class="btn-cancel-edit" (click)="toggleEdit()">取消</button>
+          </div>
+        </div>
+      }
+    </aside>
+
+    <!-- 右側：填答紀錄容器 (重新設計) -->
+    <main class="activity-container">
+      <header class="activity-header">
+        <div class="header-text">
+          <h3><i class="fas fa-layer-group"></i> 問卷活動紀錄</h3>
+          <span class="count-badge">共 {{ filteredTotal.length }} 筆</span>
+        </div>
+
+        <div class="activity-controls">
+          <div class="search-box-unified">
+            <i class="fas fa-search"></i>
+            <input type="text" [(ngModel)]="searchText" (input)="onSearchChange()" placeholder="快速尋找問卷...">
+          </div>
+          <div class="filter-select-unified">
+            <select [(ngModel)]="statusFilter" (change)="onSearchChange()">
+              <option value="all">所有狀態</option>
+              <option value="submitted">已送出</option>
+              <option value="draft">暫存中</option>
+              <option value="expired">已過期</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- 列表區域 -->
+      <div class="history-list-wrapper">
+        <div class="list-header">
+          <div class="col-info">問卷資訊</div>
+          <div class="col-status">目前進度 / 狀態</div>
+          <div class="col-action">操作</div>
+        </div>
+
+        @for (item of paginatedHistories; track item.id) {
+          <div class="list-row-item" [class]="item.status">
+            <!-- 左側資訊 -->
+            <div class="col-info">
+              <div class="title-row">
+                <span class="type-pill">{{ item.type }}</span>
+                <h4 class="item-title">{{ item.title }}</h4>
+              </div>
+              <p class="update-time"><i class="far fa-clock"></i> 最後更新於 {{ item.filledDate }}</p>
+            </div>
+
+            <!-- 中間狀態與進度 -->
+            <div class="col-status">
+              <div class="status-indicator">
+                <span class="status-dot" [class]="item.status"></span>
+                <span class="status-label-text">{{ getStatusLabel(item.status) }}</span>
+              </div>
+              
+              @if (item.status === 'draft') {
+                <div class="progress-container">
+                  <div class="progress-track">
+                    <div class="progress-fill" [style.width.%]="item.progress"></div>
+                  </div>
+                  <span class="progress-text">{{ item.progress }}%</span>
+                </div>
+              }
+            </div>
+
+            <!-- 右側動作按鈕 (統一格式) -->
+            <div class="col-action">
+              <button 
+                [class]="item.status === 'draft' ? 'btn-standard-action' : 'btn-preview'" 
+                (click)="handleAction(item)">
+                @if (item.status === 'draft') {
+                  <span>繼續填寫</span><i class="fas fa-chevron-right"></i>
+                } @else {
+                  <i class="fas fa-eye"></i> <span>檢視填答</span>
+                }
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-list-state">
+            <div class="empty-icon-box"><i class="fas fa-folder-open"></i></div>
+            <p>找不到相關的紀錄</p>
+            <button class="btn-reset-filters" (click)="searchText=''; statusFilter='all'; onSearchChange()">
+              重置過濾器
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- 底部統一分頁 -->
+      @if (pageNumbers.length > 1) {
+        <nav class="pagination-container">
+          <div class="page-numbers-group">
+            @for (p of pageNumbers; track p) {
+              <button class="page-btn" 
+                      [class.is-active]="currentPage === p" 
+                      (click)="setPage(p)">
+                {{ p }}
+              </button>
+            }
+          </div>
+        </nav>
+      }
+    </main>
+  </div>
+</div>

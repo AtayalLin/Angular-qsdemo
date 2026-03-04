@@ -1,78 +1,81 @@
 <div class="bg-wave"></div>
 
+<!-- 右上角專業通知彈窗 -->
+@if (showToast) {
+  <div class="toast-popup-container">
+    <div class="toast-popup-box">
+      <div class="toast-icon">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <div class="toast-content">
+        <span class="toast-title">提示訊息</span>
+        <span class="toast-msg">{{ toastMsg }}</span>
+      </div>
+      <div class="toast-timer"></div>
+    </div>
+  </div>
+}
+
 @if (previewData) {
 <div class="result-page">
   <section class="survey-header">
-    <div class="preview-badge">預覽確認</div>
-    <h1 class="survey-title">{{ previewData.title || '87世紀遊戲主機／平台市場調查' }}</h1>
+    <div class="preview-badge">{{ isReadOnly ? '填答紀錄' : '預覽確認' }}</div>
+    <h1 class="survey-title">{{ previewData.title || '問卷預覽' }}</h1>
     <div class="survey-meta">
       <span>問卷 ID：#{{ previewData.id }}</span>
-      <span class="warning-text">※ 目前為預覽狀態，尚未正式送出</span>
+      @if (!isReadOnly) {
+        <span class="warning-text">※ 目前為預覽狀態，尚未正式送出</span>
+      } @else {
+        <span class="status-text submitted">狀態：已完成送出</span>
+      }
     </div>
   </section>
 
   <div class="preview-info-banner">
-  <div class="info-group">
-    <div class="info-item">
-      <span class="info-label">姓名</span>
-      <span class="info-value">{{ previewData.userInfo?.name || '未填寫' }}</span>
-    </div>
-    <div class="info-item">
-      <span class="info-label">電話</span>
-      <span class="info-value">{{ previewData.userInfo?.phone || '未填寫' }}</span>
-    </div>
-    <div class="info-item">
-      <span class="info-label">信箱</span>
-      <span class="info-value">{{ previewData.userInfo?.email || '未填寫' }}</span>
+    <div class="info-group">
+      <div class="info-item">
+        <span class="info-label">姓名</span>
+        <span class="info-value">{{ previewData.userInfo?.name || '未填寫' }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">電話</span>
+        <span class="info-value">{{ previewData.userInfo?.phone || '未填寫' }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">信箱</span>
+        <span class="info-value">{{ previewData.userInfo?.email || '未填寫' }}</span>
+      </div>
     </div>
   </div>
-</div>
 
   <div class="question-list">
+    <!-- Q1 -->
     <div class="question-card">
       <div class="question-head">
         <span class="question-type single">單選題</span>
-        <h3>Q1：您目前最常使用的遊戲平台為？</h3>
+        <h3>Q1：您對此問卷內容的評價是？</h3>
       </div>
       <div class="preview-content">
-        <p class="answer-text">{{ getDisplayValue("q1") }}</p>
+        <p class="answer-text">{{ previewData.q1 || '未填寫' }}</p>
       </div>
     </div>
 
+    <!-- Q2 -->
     <div class="question-card">
       <div class="question-head">
         <span class="question-type multiple">複選題</span>
-        <h3>Q2：您選擇遊戲平台時重視哪些因素？</h3>
+        <h3>Q2：您的關注點包含？</h3>
       </div>
       <div class="preview-content">
-        <p class="answer-text">{{ getDisplayValue("q2") }}</p>
+        <p class="answer-text">{{ previewData.q2 || '未填寫' }}</p>
       </div>
     </div>
 
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type single">單選題</span>
-        <h3>Q3：您是否願意嘗試支援 VR / AR 的遊戲主機？</h3>
-      </div>
-      <div class="preview-content">
-        <p class="answer-text">{{ getDisplayValue("q3") }}</p>
-      </div>
-    </div>
-
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type multiple">複選題</span>
-        <h3>Q4：您最常遊玩的遊戲類型為？</h3>
-      </div>
-      <div class="preview-content">
-        <p class="answer-text">{{ getDisplayValue("q4") }}</p>
-      </div>
-    </div>
-
+    <!-- Q5 (開放題) -->
     <div class="question-card">
       <div class="question-head">
         <span class="question-type text">開放題</span>
-        <h3>Q5：您對未來遊戲主機或平台有什麼期待或建議？</h3>
+        <h3>Q5：您的具體建議？</h3>
       </div>
       <div class="preview-content">
         <div class="answer-textarea-view">
@@ -82,48 +85,28 @@
     </div>
 
     <div class="action-footer">
-      <button type="button" class="btn-preview-back" (click)="cancelAndBack()">
-        <i class="fas fa-edit"></i> 取消送出並返回
-      </button>
-      <button
-        type="button"
-        class="btn-gaming-submit"
-        (click)="openSubmitModal()"
-      >
-        確認送出並觀看結果 <i class="fas fa-check"></i>
-      </button>
-    </div>
-
-    @if (showConfirmModal) {
-    <div class="modal-overlay" (click)="closeModal()">
-      <div class="gaming-modal" (click)="$event.stopPropagation()">
-        <div class="modal-icon">⚠️</div>
-        <h3 class="modal-title">確認送出</h3>
-        <p class="modal-text">
-          送出後將無法修改內容，<br />是否確定送出問卷並查看統計結果？
-        </p>
-
-        <div class="modal-actions">
-          <button class="btn-modal-secondary" (click)="closeModal()">
-            取消
-          </button>
-          <button class="btn-modal-primary" (click)="finalSubmit()">
-            確認
-          </button>
-        </div>
-      </div>
-    </div>
-    }
-
-    <div class="toast-notification" [class.show]="showToast">
-      <i class="fas fa-check-circle"></i>✅問卷已送出✅
+      <!-- 唯讀模式下僅顯示返回會員中心 -->
+      @if (isReadOnly) {
+        <button type="button" class="btn-preview-back" (click)="goBack()">
+          <i class="fas fa-reply"></i> 返回會員中心
+        </button>
+      } @else {
+        <!-- 正常預覽模式下顯示兩個按鈕 -->
+        <button type="button" class="btn-preview-back" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i> 返回修改
+        </button>
+        <button type="button" class="btn-gaming-submit" (click)="submitSurvey()">
+          確認送出問卷 <i class="fas fa-check"></i>
+        </button>
+      }
     </div>
   </div>
 </div>
 } @else {
   <div class="result-page">
     <section class="survey-header">
-      <h1 class="survey-title">讀取資料中...</h1>
+      <h1 class="survey-title">無預覽資料</h1>
+      <p style="text-align: center; color: #b08a74; margin-top: 20px;">請確保已從問卷頁面點選「預覽」或從會員中心進入。</p>
     </section>
   </div>
 }

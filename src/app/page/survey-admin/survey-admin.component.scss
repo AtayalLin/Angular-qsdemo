@@ -459,12 +459,21 @@
             margin-left: auto;
             background: none;
             border: none;
-            font-size: 1.4rem;
-            color: #ccc;
+            font-size: 1.6rem;
+            color: #d88b75;
             cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            transition: all 0.2s;
 
             &:hover {
-                color: #e76f51;
+                color: #ffffff;
+                background-color: #e76f51;
             }
         }
     }
@@ -536,11 +545,21 @@
         .btn-del-opt {
             background: none;
             border: none;
-            color: #ccc;
+            color: #d88b75;
             cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
 
             &:hover {
-                color: #e76f51;
+                color: #ffffff;
+                background-color: #e76f51;
             }
         }
     }
@@ -756,7 +775,7 @@
     &:hover {
         background-color: #238676;
         box-shadow: 0 6px 14px rgba(42, 157, 143, 0.6);
-        filter: brightness(3.0);
+        filter: brightness(1.0);
     }
 }
 
@@ -768,7 +787,7 @@
     &:hover {
         background-color: #e8944f;
         box-shadow: 0 6px 14px rgba(244, 162, 97, 0.6);
-        filter: brightness(3.0);
+        filter: brightness(1.0);
     }
 }
 
@@ -780,7 +799,7 @@
     &:hover {
         background-color: #5d3e35;
         box-shadow: 0 6px 14px rgba(109, 76, 65, 0.6);
-        filter: brightness(3.0);
+        filter: brightness(1.0);
     }
 }
 
@@ -807,7 +826,7 @@
 
     &:hover {
         box-shadow: 0 6px 16px rgba(231, 111, 81, 0.6);
-        filter: brightness(3.0);
+        filter: brightness(1.0);
     }
 
     &:active {
@@ -824,7 +843,7 @@
     &:hover {
         background: #f4a261;
         color: #ffffff;
-        filter: brightness(1.05);
+        filter: brightness(1.0);
     }
 }
 

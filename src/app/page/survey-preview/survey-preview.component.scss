@@ -1,356 +1,293 @@
-/* ======================================================
-    全螢幕背景（同步問卷與結果頁）
-====================================================== */
+/* ===============================
+   全螢幕背景 (維持原有風格)
+================================ */
 .bg-wave {
     position: fixed;
-    inset: 0;
-    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #ffe6d8 0%, #ffd3c0 50%, #ffbfa0 100%);
     overflow: hidden;
-    background:
-        radial-gradient(700px 400px at 10% 15%, rgba(255, 191, 160, 0.18), transparent 65%),
-        radial-gradient(600px 360px at 85% 85%, rgba(244, 162, 97, 0.14), transparent 65%),
-        linear-gradient(160deg, #7d7b7a 0%, #241b16 45%, #7a7472 100%);
+    z-index: -1;
 }
 
-.bg-wave::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 16px),
-        repeating-linear-gradient(45deg, rgba(244, 242, 240, 0.04), rgba(244, 242, 240, 0.04) 1px, transparent 1px, transparent 22px);
-    opacity: 0.7;
+/* ===============================
+   [新] 右上角專業通知彈窗 (Toast)
+================================ */
+.toast-popup-container {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 9999;
+    animation: toastSlideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* ======================================================
-    Preview Page 主容器
-====================================================== */
+.toast-popup-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 35px rgba(231, 111, 81, 0.2);
+    border: 1px solid rgba(244, 162, 97, 0.3);
+    min-width: 320px;
+    position: relative;
+    overflow: hidden;
+
+    .toast-icon {
+        font-size: 1.5rem;
+        color: #e76f51;
+    }
+
+    .toast-content {
+        display: flex;
+        flex-direction: column;
+
+        .toast-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #6d4c41;
+            margin-bottom: 2px;
+        }
+
+        .toast-msg {
+            font-size: 0.85rem;
+            color: #b08a74;
+            font-weight: 500;
+        }
+    }
+
+    /* 倒數計時條 */
+    .toast-timer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f4a261, #e76f51);
+        animation: toastProgress 2.5s linear forwards;
+    }
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(50px) scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes toastProgress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* ===============================
+   頁面主要內容佈局
+================================ */
 .result-page {
     max-width: 1100px;
     margin: 60px auto;
     padding: 40px;
     background: rgba(255, 248, 240, 0.95);
     border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    color: #6d4c41;
-    font-family: 'Noto Sans JP', 'Noto Sans TC', 'Segoe UI', sans-serif;
-    animation: fadeIn 0.6s ease-out;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 80vh;
 }
 
-/* 預覽模式頂部標籤 */
-.preview-badge {
-    display: inline-block;
-    background: #6d4c41;
-    color: #fff;
-    padding: 6px 16px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 10px rgba(109, 76, 65, 0.2);
-}
+.survey-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f4a261;
 
-.survey-header { margin-bottom: 36px; }
-.survey-title { font-size: 30px; font-weight: 700; margin-bottom: 14px; color: #6d4c41; }
-.survey-meta { display: flex; flex-wrap: wrap; gap: 18px; font-size: 0.9rem; color: #9c6f55; }
-.warning-text { color: #e76f51; font-weight: 700; }
-
-/* ======================================================
-    Question Card 結構
-====================================================== */
-.question-list { display: flex; flex-direction: column; gap: 28px; }
-
-.question-card {
-    padding: 28px 30px;
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(8px);
-    border-radius: 20px;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
-}
-
-.question-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.question-head h3 { font-size: 1.05rem; font-weight: 600; margin: 0; color: #6d4c41; }
-
-.question-type { font-size: 0.75rem; padding: 4px 12px; border-radius: 999px; font-weight: 500; }
-.question-type.single { background: #ffd3c0; color: #6d4c41; }
-.question-type.multiple { background: #ffe6d8; color: #6d4c41; }
-.question-type.text { background: #e9f5f2; color: #2a9d8f; }
-
-/* ======================================================
-    預覽內容顯示區域 (取代原本的 Input)
-====================================================== */
-.preview-content {
-    padding: 18px 24px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 245, 245, 0.5) 100%);
-    border: 1px solid rgba(230, 191, 166, 0.4);
-    border-radius: 12px;
-}
-
-.answer-text {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #4e342e;
-    display: flex;
-    align-items: center;
-}
-
-.answer-text::before {
-    content: "●";
-    color: #e76f51;
-    margin-right: 12px;
-    font-size: 0.8rem;
-}
-
-/* 開放題預覽框 */
-.answer-textarea-view {
-    min-height: 100px;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #4e342e;
-    white-space: pre-wrap; /* 保留換行 */
-}
-
-/* ======================================================
-    底部動作按鈕
-====================================================== */
-.action-footer { 
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 16px; 
-    padding-top: 30px; 
-}
-
-/* 確認送出按鈕 (立體電玩風) */
-.btn-gaming-submit {
-    padding: 16px 48px;
-    background: #e76f51;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 5px 0 #b3523a;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 7px 0 #b3523a, 0 10px 20px rgba(231, 111, 81, 0.3);
-        background: #f07e63;
+    .preview-badge {
+        display: inline-block;
+        padding: 4px 16px;
+        background: #f4a261;
+        color: #fff;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 12px;
     }
 
-    &:active {
-        transform: translateY(3px);
-        box-shadow: 0 2px 0 #b3523a;
+    .survey-title {
+        font-size: 1.8rem;
+        color: #6d4c41;
+        margin-bottom: 12px;
+    }
+
+    .survey-meta {
+        font-size: 0.85rem;
+        color: #b08a74;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+
+        .warning-text {
+            color: #e76f51;
+            font-weight: 700;
+        }
     }
 }
 
-/* 取消並返回按鈕 (外框立體感) */
-.btn-preview-back {
-    background: #fff;
-    color: #6d4c41;
-    border: 2px solid #6d4c41;
-    padding: 14px 28px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    transition: 0.3s;
-    box-shadow: 0 4px 0 #6d4c41;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:hover {
-        background: #fdf5f0;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 0 #6d4c41;
-    }
-
-    &:active {
-        transform: translateY(2px);
-        box-shadow: 0 1px 0 #6d4c41;
-    }
-}
-
-/* 遮罩設定 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* 深灰色遮罩 */
-  backdrop-filter: blur(4px); /* 背景模糊感 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* 彈窗本體 */
-.gaming-modal {
-  background: #1a1a2e;
-  border: 2px solid #00f2fe;
-  border-radius: 15px;
-  padding: 30px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
-  animation: modalIn 0.3s ease-out;
-
-  .modal-icon {
-    font-size: 3rem;
-    margin-bottom: 15px;
-  }
-
-  .modal-title {
-    color: #fff;
-    margin-bottom: 10px;
-    letter-spacing: 2px;
-  }
-
-  .modal-text {
-    color: #b0b0d1;
-    line-height: 1.6;
-    margin-bottom: 25px;
-  }
-}
-
-/* 彈窗按鈕風格 */
-.modal-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-
-  button {
-    padding: 10px 25px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  .btn-modal-secondary {
-    background: #444;
-    color: white;
-    &:hover { background: #555; }
-  }
-
-  .btn-modal-primary {
-    background: linear-gradient(45deg, #00f2fe, #4facfe);
-    color: #000;
-    &:hover {
-      box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
-      transform: translateY(-2px);
-    }
-  }
-}
-
-/* 右上角通知通知 */
-.toast-notification {
-  position: fixed;
-  top: 20px;
-  right: -300px; /* 預設在畫面外 */
-  background: #2ecc71;
-  color: white;
-  padding: 15px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 1100;
-
-  &.show {
-    right: 20px;
-  }
-}
-
-/* ======================================================
-    預覽頁個資顯示區
-====================================================== */
 .preview-info-banner {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(231, 111, 81, 0.3);
-    border-radius: 15px;
-    padding: 20px 30px;
-    margin-bottom: 28px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    background: #fff;
+    border: 1px solid #f0c4a8;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+
+    .info-group {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        flex-wrap: wrap;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        .info-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #b08a74;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #6d4c41;
+            font-weight: 600;
+        }
+    }
 }
 
-.info-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-}
-
-.info-item {
-    flex: 1;
+.question-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 25px;
 }
 
-.info-label {
-    font-size: 0.8rem;
-    color: #9c6f55;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+.question-card {
+    background: #ffffff;
+    border-radius: 15px;
+    border: 1px solid #f0c4a8;
+    padding: 25px;
+    transition: all 0.2s;
 
-.info-value {
-    font-size: 1.1rem;
-    color: #6d4c41;
-    font-weight: 700;
-}
+    &:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
 
-/* 行動裝置優化 */
-@media (max-width: 768px) {
-    .info-group {
-        flex-direction: column;
-        align-items: flex-start;
+    .question-head {
+        display: flex;
+        align-items: center;
         gap: 15px;
+        margin-bottom: 15px;
+
+        .question-type {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+
+            &.single {
+                background: #2a9d8f;
+            }
+
+            &.multiple {
+                background: #f4a261;
+            }
+
+            &.text {
+                background: #6d4c41;
+            }
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #6d4c41;
+            margin: 0;
+        }
     }
-    .preview-info-banner {
+
+    .preview-content {
+        background: #fffaf6;
         padding: 15px 20px;
+        border-radius: 8px;
+        border-left: 4px solid #f0c4a8;
+
+        .answer-text {
+            margin: 0;
+            font-size: 1rem;
+            color: #6d4c41;
+            line-height: 1.6;
+        }
+
+        .answer-textarea-view {
+            white-space: pre-wrap;
+            color: #6d4c41;
+            font-size: 0.95rem;
+        }
     }
 }
 
-/* 預覽頁專屬：警告文字 */
-.warning-text {
-    color: #e76f51;
-    font-weight: 600;
-    animation: pulse 2s infinite;
-}
+.action-footer {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
 
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}   
+    button {
+        height: 48px;
+        padding: 0 35px;
+        border-radius: 24px;
+        border: none;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s;
+    }
 
-@keyframes modalIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+    .btn-preview-back {
+        background: #ffffff;
+        color: #b08a74;
+        border: 1px solid #f0c4a8;
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        &:hover {
+            background: #fffaf6;
+            color: #e76f51;
+            border-color: #e76f51;
+        }
+    }
 
-@media (max-width: 768px) {
-    .result-page { margin: 40px 16px; padding: 28px 20px; }
-    .action-footer { flex-direction: column-reverse; }
-    .btn-gaming-submit, .btn-preview-back { width: 100%; justify-content: center; }
+    .btn-gaming-submit {
+        background: linear-gradient(135deg, #f4a261, #e76f51);
+        color: #fff;
+        box-shadow: 0 6px 14px rgba(231, 111, 81, 0.2);
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(231, 111, 81, 0.3);
+            filter: brightness(1.05);
+        }
+    }
 }

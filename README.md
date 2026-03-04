@@ -1,48 +1,88 @@
-# QSDemo - 專業問卷系統前端專案
+# QSDemo - 企業級問卷管理系統 (Enterprise Questionnaire System)
 
-## 專案概述
+![Angular](https://img.shields.io/badge/Angular-19.0.0-dd0031.svg?style=for-the-badge&logo=angular)
+![SCSS](https://img.shields.io/badge/SCSS-Responsive-hotpink.svg?style=for-the-badge&logo=sass)
+![Status](https://img.shields.io/badge/Status-Stable-success.svg?style=for-the-badge)
 
-QSDemo 是一個基於 Angular 19 打造的高級問卷管理系統。本專案採用專業的 **Glassmorphism (毛玻璃)** 設計風格與溫暖的漸層配色，提供流暢的使用者填寫體驗與功能強大的管理後台。
+QSDemo 是一個現代化、響應式且具備高度互動性的問卷管理平台。本專案採用 Angular 框架開發，結合了最新的 Glassmorphism 視覺設計風格，提供使用者與管理者流暢的操作體驗。
 
-## 線上展示
+## 🌟 最新功能與優化 (2026.03 Update)
 
-🌐 **GitHub Pages**: [https://AtayalLin.github.io/Angular-qsdemo/](https://AtayalLin.github.io/Angular-qsdemo/)
+### 🎨 視覺與介面設計 (UI/UX)
+- **Glassmorphism 風格**：全站採用毛玻璃特效、柔和漸層與深邃陰影，打造精緻的企業級質感。
+- **完全響應式佈局 (RWD)**：
+  - **自動適應 Grid**：列表頁面採用彈性網格技術，自動適應 1200px / 992px / 768px 等多種斷點，徹底移除橫向捲軸。
+  - **行動版優化**：在手機裝置上自動轉換為卡片式閱覽模式，操作更直覺。
+- **互動反饋**：按鈕、卡片與輸入框皆具備細緻的懸浮 (Hover) 與聚焦 (Focus) 動畫。
 
-## 核心功能亮點
+### 🚀 核心模組功能
 
-### 1. 智慧問卷列表 (Survey List)
-- **進階搜尋**：支援名稱模糊比對、**日期區間選擇**、類型與狀態篩選。
-- **動態分頁**：實作 10 頁視窗切換邏輯，支援大量數據瀏覽。
-- **身分識別**：區分訪客、一般會員與管理員，根據權限動態開放功能。
-- **安全保護**：自定義「刪除確認」與「登出確認」專業彈窗。
+#### 1. 問卷大廳 (Survey Hall)
+- **進階篩選器**：整合式搜尋面板，支援關鍵字、日期區間、問卷類型與狀態的多重交叉篩選。
+- **視覺化狀態標籤**：膠囊型狀態指示燈 (Active/Closed)，支援自動換行與長字串保護。
+- **Premium 登入體驗**：
+  - 全螢幕置中彈窗，具備背景磨砂遮罩。
+  - 整合密碼顯示/隱藏切換 (Toggle Visibility)。
+  - 專業的表單驗證與錯誤提示。
 
-### 2. 專業管理中心 (Admin Control Panel)
-- **卡片式編輯器**：每一題均為獨立大卡片，層次分明，編輯體驗極佳。
-- **動態排版與必填邏輯**：
-  - **智慧預設值**：新增時自動配置姓名為必填，其餘題目預設不必填。
-  - **狀態雙向同步**：編輯模式完整還原資料庫必填狀態。
-- **題目高級連動**：
-  - **承上題功能**：管理者可設定題目間的依賴關係，實作防呆互斥邏輯。
-  - **自由排序**：提供題目上移/下移功能，靈活調整問卷結構。
-- **工作台模式**：底部設有「待處理問卷」區塊，支援一鍵載入草稿資料。
+#### 2. 會員中心 (Member Dashboard)
+- **個人儀表板**：整合個人資料與填答歷史紀錄。
+- **安全性設定**：新增密碼修改功能，包含舊密碼驗證與新密碼強度確認 UI。
+- **問卷歷史追蹤**：
+  - 視覺化進度條 (Progress Bar) 顯示草稿填寫進度。
+  - 歷史問卷查詢與「繼續填寫」快捷入口。
 
-### 3. 使用者填寫體驗 (Smart Survey Interface)
-- **自動切板系統**：個資填寫區根據需求項目（1-3項）自動調整一、二、三欄 Grid 佈局。
-- **動態驗證機制**：僅針對管理員要求的必填項目進行表單校驗。
-- **承上題動態鎖定**：子題目會根據父題目的答題狀態即時解鎖或變灰禁用。
+#### 3. 管理者後台 (Admin Panel)
+- 問卷發佈、編輯、刪除與暫停填寫的完整生命週期管理。
+- 防呆機制：刪除與重大變更前的二次確認彈窗。
 
-## 技術架構
+## 🛠️ 技術棧 (Tech Stack)
 
-- **框架**: Angular 19 (Standalone Components)
-- **語言**: TypeScript 5.6+
-- **佈局**: SCSS (CSS Grid & Flexbox)
-- **部署**: GitHub Actions 自動化部署
+- **Frontend Framework**: Angular 19+ (Standalone Components)
+- **Styling**: SCSS (Sass), CSS Grid, Flexbox
+- **Icons**: FontAwesome (Free)
+- **State Management**: RxJS (Basic)
 
-## 開發與後端對接說明
+## 📦 安裝與執行 (Installation)
 
-本專案已完成前端與後端 MySQL 格式的 100% 對齊。詳細的後端開發與資料表更新建議，請參閱：
-👉 [**Scheduledupdate.md (後端更新同步指南)**](./Scheduledupdate.md)
+請確保您的環境已安裝 Node.js (v20+) 與 Angular CLI。
 
-## 授權
+```bash
+# 1. 複製專案
+git clone https://github.com/your-username/qsdemo.git
 
-此專案僅供學習和展示用途。
+# 2. 進入目錄
+cd qsdemo
+
+# 3. 安裝依賴
+npm install
+
+# 4. 啟動開發伺服器
+ng serve
+```
+
+啟動後，請瀏覽器打開 `http://localhost:4200/` 即可開始使用。
+
+## 📂 專案結構
+
+```
+src/app/
+├── page/
+│   ├── survey-list/      # 問卷列表、搜尋、登入彈窗
+│   ├── survey-member/    # 會員中心、個人設定、歷史紀錄
+│   ├── survey-admin/     # 管理者後台功能
+│   └── survey-result/    # 統計結果圖表
+├── survey.service.ts     # 資料流服務
+└── ...
+```
+
+## 📝 版本紀錄
+
+- **v2.1.0 (2026-03-04)**
+  - [UI] 重構列表頁 CSS Grid，移除橫向捲軸。
+  - [Feat] 會員中心新增密碼修改功能。
+  - [Fix] 優化彈窗定位 (Fixed Positioning) 與遮罩層級。
+  - [Style] 全面升級為 Glassmorphism 設計語言。
+
+---
+© 2026 QSDemo Team. All Rights Reserved.
