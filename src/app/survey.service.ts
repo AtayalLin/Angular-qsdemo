@@ -185,4 +185,21 @@ export class SurveyService {
     const found = this.surveys.find((s) => s.id === id);
     return of(found);
   }
+
+  /**
+   * 單筆刪除問卷
+   */
+  deleteSingleSurvey(quizId: number): Observable<any> {
+    const apiURL = `http://localhost:8080/quiz/delete_single?quizId=${quizId}`;
+    return this.http.get(apiURL);
+  }
+
+  /**
+   * 批次刪除問卷
+   */
+  deleteBatchSurveys(quizIdList: number[]): Observable<any> {
+    const apiURL = 'http://localhost:8080/quiz/delete';
+    const payload = { quizIdList: quizIdList };
+    return this.http.post(apiURL, payload);
+  }
 }
