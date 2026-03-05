@@ -145,7 +145,7 @@ export class SurveyMemberComponent implements OnInit {
   passwordData = {
     current: '',
     new: '',
-    confirm: ''
+    confirm: '',
   };
 
   constructor(
@@ -183,7 +183,7 @@ export class SurveyMemberComponent implements OnInit {
       this.router.navigate(['/surveys', item.id, 'question']);
     } else {
       if (!item.hasData) {
-        this.triggerToast('問卷已過期，下次請早 !!');
+        this.triggerToast('問卷已過期，無法檢視 !!');
         return;
       }
 
