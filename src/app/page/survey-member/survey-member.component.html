@@ -178,15 +178,24 @@
 
             <!-- 右側動作按鈕 (統一格式) -->
             <div class="col-action">
-              <button 
-                [class]="item.status === 'draft' ? 'btn-standard-action' : 'btn-preview'" 
-                (click)="handleAction(item)">
+              <div class="action-btn-group">
                 @if (item.status === 'draft') {
-                  <span>繼續填寫</span><i class="fas fa-chevron-right"></i>
+                  <button class="btn-standard-action" (click)="handleAction(item)">
+                    <span>繼續填寫</span><i class="fas fa-chevron-right"></i>
+                  </button>
+                } @else if (item.status === 'expired') {
+                  <button class="btn-preview" (click)="handleAction(item)">
+                    <i class="fas fa-eye"></i> <span>檢視</span>
+                  </button>
+                  <button class="btn-delete-history" (click)="openDeleteModal(item)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
                 } @else {
-                  <i class="fas fa-eye"></i> <span>檢視填答</span>
+                  <button class="btn-preview" (click)="handleAction(item)">
+                    <i class="fas fa-eye"></i> <span>檢視填答</span>
+                  </button>
                 }
-              </button>
+              </div>
             </div>
           </div>
         } @empty {
@@ -217,3 +226,29 @@
     </main>
   </div>
 </div>
+
+<!-- [新增] 刪除確認彈窗 -->
+@if (showDeleteModal) {
+  <div class="modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-main">
+          <div class="icon-box danger"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="title-text">
+            <h2>確認移除紀錄</h2>
+            <p class="title-desc">此操作僅移除您的填答活動紀錄</p>
+          </div>
+        </div>
+        <button class="close-x" (click)="closeDeleteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="warning-text">您確定要從活動紀錄中移除 <strong>「{{ targetHistoryItem?.title }}」</strong> 嗎？</p>
+        <p class="sub-hint">這不會影響問卷本身的統計數據，但您將無法再次從此處檢視該筆填答。</p>
+      </div>
+      <div class="modal-footer horizontal">
+        <button class="btn-cancel" (click)="closeDeleteModal()">取消</button>
+        <button class="btn-confirm-delete" (click)="confirmDelete()">確認刪除</button>
+      </div>
+    </div>
+  </div>
+}

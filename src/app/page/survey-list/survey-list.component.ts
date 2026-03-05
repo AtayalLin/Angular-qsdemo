@@ -100,6 +100,13 @@ export class SurveyListComponent implements OnInit {
   showEditModal = false;
   targetEditId: number | null = null;
 
+  // --- Toast 提示 ---
+  toast = {
+    show: false,
+    title: '',
+    message: '',
+  };
+
   ngOnInit(): void {
     this.fetchSurveys();
 
@@ -170,9 +177,14 @@ export class SurveyListComponent implements OnInit {
     });
   }
 
-  getDisplayStatus(status: string): string {
-    if (this.isAdmin) return status;
-    return status === '已發佈' ? '已發佈' : '未開放填寫';
+  getDisplayStatus(survey: Survey): string {
+    const now = new Date();
+    const end = new Date(survey.endDate);
+    if (survey.publishStatus === '已發佈' && end < now) {
+      return '已過期';
+    }
+    if (this.isAdmin) return survey.publishStatus;
+    return survey.publishStatus === '已發佈' ? '已發佈' : '未開放填寫';
   }
 
   onSearch() {
@@ -193,7 +205,27 @@ export class SurveyListComponent implements OnInit {
   }
 
   startSurvey(id: number) {
+    const s = this.surveys.find((x) => x.id === id);
+    if (s) {
+      const now = new Date();
+      const end = new Date(s.endDate);
+      if (end < now && !this.isAdmin) {
+        this.triggerToast('無法進入填寫', '此問卷已過期無法填寫');
+        return;
+      }
+    }
     this.router.navigate(['/surveys', id, 'question']);
+  }
+
+  viewResult(id: number) {
+    this.router.navigate(['/surveys', id, 'result']);
+  }
+
+  triggerToast(title: string, message: string) {
+    this.toast = { show: true, title, message };
+    setTimeout(() => {
+      this.toast.show = false;
+    }, 3000);
   }
 
   publishSurvey(id: number) {

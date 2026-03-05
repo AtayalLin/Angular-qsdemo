@@ -4,29 +4,27 @@
   <!-- 右上角按鈕組 -->
   <div class="top-actions">
     @if (isLoggedIn) {
-      <span class="user-welcome"
-        >您好, <strong> {{ currentUser?.name }}</strong></span
-      >
-
+      <span class="user-welcome">您好, <strong> {{ currentUser?.name }}</strong></span>
+      
       @if (isAdmin) {
         <button class="admin-link-btn" [routerLink]="['/admin']">
           問卷管理中心
         </button>
-        <button class="admin-link-btn" (click)="logout()">管理員登出</button>
+        <button class="admin-link-btn" (click)="logout()">
+          管理員登出
+        </button>
       } @else {
         <button class="member-link-btn" [routerLink]="['/member']">
           會員中心
         </button>
       }
     }
-
+    
     <button
       class="login-btn"
       (click)="isLoggedIn ? logout() : openLoginModal()"
     >
-      {{
-        isLoggedIn ? (isAdmin ? "已登入 (Admin)" : "會員登出") : "登入 / 註冊"
-      }}
+      {{ isLoggedIn ? (isAdmin ? "已登入 (Admin)" : "會員登出") : "登入 / 註冊" }}
     </button>
   </div>
 
@@ -35,13 +33,12 @@
       <i class="fas fa-filter"></i> 篩選條件 <span>Search Filters</span>
     </div>
 
-    <!-- [移動至此] 批次管理啟動按鈕 -->
     @if (isAdmin && !isManageMode) {
       <button class="btn-start-manage" (click)="toggleManageMode()">
         <i class="fas fa-tasks"></i> 批次管理模式
       </button>
     }
-
+    
     <div class="filter-row">
       <div class="filter-group">
         <label><i class="fas fa-keyboard"></i> 問卷名稱</label>
@@ -99,7 +96,6 @@
   </div>
 
   <div class="list-layout-container" [class.manage-active]="isManageMode">
-    <!-- 左側管理面板 -->
     @if (isAdmin && isManageMode) {
       <aside class="side-manage-panel">
         <div class="panel-header">
@@ -128,7 +124,6 @@
 
     <div class="survey-list">
       <div class="survey-header">
-        <!-- 僅在管理模式顯示 Checkbox -->
         @if (isAdmin && isManageMode) {
           <div class="col checkbox">
             <input
@@ -139,30 +134,17 @@
           </div>
         }
         <div class="col id">#</div>
-        <div class="col title">
-          問卷名稱 <span class="sub-label">Survey Title</span>
-        </div>
+        <div class="col title">問卷名稱 <span class="sub-label">Survey Title</span></div>
         <div class="col type">分類 <span class="sub-label">Type</span></div>
-        <div class="col start">
-          開始日期 <span class="sub-label">Start</span>
-        </div>
+        <div class="col start">開始日期 <span class="sub-label">Start</span></div>
         <div class="col end">結束日期 <span class="sub-label">End</span></div>
-        <div class="col participants">
-          參與度 <span class="sub-label">Hits</span>
-        </div>
-        <div class="col status">
-          當前狀態 <span class="sub-label">Status</span>
-        </div>
-        <div class="col action">
-          功能操作 <span class="sub-label">Action</span>
-        </div>
+        <div class="col participants">參與度 <span class="sub-label">Hits</span></div>
+        <div class="col status">當前狀態 <span class="sub-label">Status</span></div>
+        <div class="col action">功能操作 <span class="sub-label">Action</span></div>
       </div>
 
       @for (survey of paginatedSurveys; track survey.id) {
-        <div
-          class="survey-row"
-          [class.row-selected]="selectedIds.has(survey.id)"
-        >
+        <div class="survey-row" [class.row-selected]="selectedIds.has(survey.id)">
           @if (isAdmin && isManageMode) {
             <div class="col checkbox">
               <input
@@ -183,13 +165,11 @@
           <div class="col participants">{{ survey.participants }}</div>
 
           <div class="col status">
-            <span
-              [ngClass]="{
-                'status-active': survey.publishStatus === '已發佈',
-                'status-closed': survey.publishStatus !== '已發佈',
-              }"
-            >
-              {{ getDisplayStatus(survey.publishStatus) }}
+            <span [ngClass]="{
+              'status-active': getDisplayStatus(survey) === '已發佈',
+              'status-closed': getDisplayStatus(survey) !== '已發佈'
+            }">
+              {{ getDisplayStatus(survey) }}
             </span>
           </div>
 
@@ -198,10 +178,7 @@
               <button class="btn-primary" (click)="startSurvey(survey.id)">
                 <i class="fas fa-pencil-alt"></i> 開始填寫
               </button>
-              <button
-                class="btn-preview"
-                [routerLink]="['/surveys', survey.id, 'result']"
-              >
+              <button class="btn-preview" (click)="viewResult(survey.id)">
                 <i class="fas fa-chart-bar"></i> 檢視結果
               </button>
             }
@@ -216,12 +193,12 @@
                 <i class="fas fa-edit"></i> 編輯
               </button>
               <button class="btn-delete" (click)="deleteSurvey(survey.id)">
-                <i class="fas fa-trash-alt"></i>
+                <i class="fas fa-trash-alt"></i> 刪除
               </button>
             }
 
             @if (!isAdmin && survey.publishStatus !== "已發佈") {
-              <span style="color: #b08a74; font-size: 0.8rem; font-weight: 700">
+              <span style="color: #b08a74; font-size: 0.8rem; font-weight: 700;">
                 <i class="fas fa-lock"></i> 未開放
               </span>
             }
@@ -233,49 +210,37 @@
     </div>
   </div>
 
-  <!-- 底部數位分頁區塊 -->
   <div class="pagination-wrapper">
-    <button
-      class="page-nav-btn"
-      [disabled]="currentPage === 1"
-      (click)="goToPage(1)"
-    >
-      &laquo;
-    </button>
-    <button
-      class="page-nav-btn"
-      [disabled]="currentPage === 1"
-      (click)="goToPage(currentPage - 1)"
-    >
-      &lt;
-    </button>
+    <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">&laquo;</button>
+    <button class="page-nav-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">&lt;</button>
     <div class="page-numbers">
       @for (p of pageNumbers; track p) {
-        <button
-          class="page-num-btn"
-          [class.active]="p === currentPage"
-          (click)="goToPage(p)"
-        >
-          {{ p }}
-        </button>
+        <button class="page-num-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
       }
     </div>
-    <button
-      class="page-nav-btn"
-      [disabled]="currentPage === navMaxPage"
-      (click)="goToPage(currentPage + 1)"
-    >
-      &gt;
-    </button>
-    <button
-      class="page-nav-btn"
-      [disabled]="currentPage === navMaxPage"
-      (click)="goToPage(navMaxPage)"
-    >
-      &raquo;
-    </button>
+    <button class="page-nav-btn" [disabled]="currentPage === navMaxPage" (click)="goToPage(currentPage + 1)">&gt;</button>
+    <button class="page-nav-btn" [disabled]="currentPage === navMaxPage" (click)="goToPage(navMaxPage)">&raquo;</button>
   </div>
 </div>
+
+<!-- [重要] 將所有彈窗與 Toast 移出 survey-wrapper 以實現真正的全螢幕固定定位 -->
+
+<!-- Toast 提示 -->
+@if (toast.show) {
+  <div class="toast-wrapper">
+    <div class="toast-box">
+      <div class="toast-side-accent"></div>
+      <div class="toast-icon-container">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <div class="toast-main-content">
+        <div class="toast-headline">{{ toast.title }}</div>
+        <div class="toast-subline">{{ toast.message }}</div>
+      </div>
+      <div class="toast-countdown-bar"></div>
+    </div>
+  </div>
+}
 
 <!-- 登入彈窗 -->
 @if (showLoginModal) {
@@ -296,77 +261,42 @@
           <label><i class="fas fa-envelope"></i> 帳號 Account</label>
           <div class="input-wrapper">
             <i class="fas fa-at icon-prefix"></i>
-            <input
-              id="loginAccount"
-              name="account"
-              type="text"
-              [(ngModel)]="loginForm.account"
-              placeholder="請輸入 Email 或帳號"
-            />
+            <input id="loginAccount" name="account" type="text" [(ngModel)]="loginForm.account" placeholder="請輸入 Email 或帳號" />
           </div>
         </div>
         <div class="form-group">
           <label><i class="fas fa-key"></i> 密碼 Password</label>
           <div class="input-wrapper">
             <i class="fas fa-lock icon-prefix"></i>
-            <input
-              id="loginPassword"
-              name="password"
-              [type]="showPassword ? 'text' : 'password'"
-              [(ngModel)]="loginForm.password"
-              placeholder="請輸入您的密碼"
-            />
-            <button
-              type="button"
-              class="btn-eye"
-              (click)="togglePasswordVisibility()"
-            >
-              <i
-                class="fas"
-                [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-              ></i>
+            <input id="loginPassword" name="password" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="loginForm.password" placeholder="請輸入您的密碼" />
+            <button type="button" class="btn-eye" (click)="togglePasswordVisibility()">
+              <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </button>
           </div>
         </div>
       </div>
       <div class="modal-footer login-footer">
-        <button class="btn-primary-login" (click)="handleLogin()">
-          立即登入 <span>Sign In Now</span>
-        </button>
+        <button class="btn-primary-login" (click)="handleLogin()">立即登入 <span>Sign In Now</span></button>
         <div class="footer-divider"><span>或其他操作</span></div>
         <div class="footer-links">
-          <button class="btn-secondary-link" (click)="forgotPassword()">
-            <i class="fas fa-question-circle"></i> 忘記密碼
-          </button>
-          <button
-            class="btn-secondary-link highlight"
-            (click)="registerAdmin()"
-          >
-            <i class="fas fa-user-plus"></i> 註冊新帳號
-          </button>
+          <button class="btn-secondary-link" (click)="forgotPassword()"><i class="fas fa-question-circle"></i> 忘記密碼</button>
+          <button class="btn-secondary-link highlight" (click)="registerAdmin()"><i class="fas fa-user-plus"></i> 註冊新帳號</button>
         </div>
       </div>
     </div>
   </div>
 }
 
-<!-- 刪除確認彈窗 (支援單筆/批次模式) -->
+<!-- 刪除確認彈窗 -->
 @if (showDeleteModal) {
   <div class="modal-overlay danger-overlay" (click)="closeDeleteModal()">
-    <div
-      class="modal-content delete-modal-card"
-      (click)="$event.stopPropagation()"
-    >
+    <div class="modal-content delete-modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="header-main">
-          <div class="icon-box danger">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
+          <div class="icon-box danger"><i class="fas fa-exclamation-triangle"></i></div>
           <div class="title-text">
             <h2 class="text-danger">確認刪除作業</h2>
-            <p class="title-en danger">
-              {{ isBatchDeleting ? "Batch Delete" : "Delete Survey" }}
-            </p>
+            <p class="title-en danger">{{ isBatchDeleting ? 'Batch Delete' : 'Delete Survey' }}</p>
             <p class="title-desc">此操作將永久移除資料，無法復原</p>
           </div>
         </div>
@@ -381,17 +311,11 @@
             <div class="target-title">{{ targetSurvey?.title }}</div>
           }
         </div>
-        <p class="warning-description">
-          您確定要繼續嗎？刪除後相關的填答紀錄與統計數據也會一併從系統中移除。
-        </p>
+        <p class="warning-description">您確定要繼續嗎？刪除後相關的填答紀錄與統計數據也會一併從系統中移除。</p>
       </div>
       <div class="modal-footer horizontal">
-        <button class="btn-cancel-logout" (click)="closeDeleteModal()">
-          取消並返回
-        </button>
-        <button class="btn-delete-confirm" (click)="confirmDelete()">
-          確認永久刪除
-        </button>
+        <button class="btn-cancel-logout" (click)="closeDeleteModal()">取消並返回</button>
+        <button class="btn-delete-confirm" (click)="confirmDelete()">確認永久刪除</button>
       </div>
     </div>
   </div>
@@ -400,10 +324,7 @@
 <!-- 編輯確認彈窗 -->
 @if (showEditModal) {
   <div class="modal-overlay info-overlay" (click)="closeEditModal()">
-    <div
-      class="modal-content edit-modal-card"
-      (click)="$event.stopPropagation()"
-    >
+    <div class="modal-content edit-modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="header-main">
           <div class="icon-box info"><i class="fas fa-cog"></i></div>
@@ -420,17 +341,11 @@
           <i class="fas fa-info-circle"></i>
           <span>目前已有填答進行中</span>
         </div>
-        <p class="edit-description">
-          進入編輯模式後，系統將會<strong>暫時停止</strong>其他使用者進入填寫，以確保資料結構的一致性。
-        </p>
+        <p class="edit-description">進入編輯模式後，系統將會<strong>暫時停止</strong>其他使用者進入填寫，以確保資料結構的一致性。</p>
       </div>
       <div class="modal-footer horizontal">
-        <button class="btn-cancel-logout" (click)="closeEditModal()">
-          返回列表
-        </button>
-        <button class="btn-confirm-edit" (click)="confirmEdit()">
-          確認進入編輯
-        </button>
+        <button class="btn-cancel-logout" (click)="closeEditModal()">返回列表</button>
+        <button class="btn-confirm-edit" (click)="confirmEdit()">確認進入編輯</button>
       </div>
     </div>
   </div>
@@ -449,12 +364,8 @@
         <p class="sub-text">登出後，部分管理與會員功能將受限。</p>
       </div>
       <div class="modal-footer horizontal">
-        <button class="btn-cancel-logout" (click)="closeLogoutModal()">
-          取消返回
-        </button>
-        <button class="btn-confirm-logout" (click)="confirmLogout()">
-          確認登出
-        </button>
+        <button class="btn-cancel-logout" (click)="closeLogoutModal()">取消返回</button>
+        <button class="btn-confirm-logout" (click)="confirmLogout()">確認登出</button>
       </div>
     </div>
   </div>

@@ -148,6 +148,10 @@ export class SurveyMemberComponent implements OnInit {
     confirm: '',
   };
 
+  // [新增] 刪除確認彈窗相關
+  showDeleteModal = false;
+  targetHistoryItem: SurveyHistory | null = null;
+
   constructor(
     private router: Router,
     private surveyService: SurveyService,
@@ -172,7 +176,7 @@ export class SurveyMemberComponent implements OnInit {
           filledDate: s.startDate,
           status: status,
           progress: status === 'draft' ? 65 : undefined,
-          hasData: index !== 2, // 第三筆模擬無資料
+          hasData: true, // 全部允許檢視
         };
       });
     });
@@ -182,11 +186,6 @@ export class SurveyMemberComponent implements OnInit {
     if (item.status === 'draft') {
       this.router.navigate(['/surveys', item.id, 'question']);
     } else {
-      if (!item.hasData) {
-        this.triggerToast('問卷已過期，無法檢視 !!');
-        return;
-      }
-
       // [關鍵] 取得對應的模擬填答假資料並跳轉，同時帶入 status
       const fakeData = this.mockAnswersMap[item.id] || {
         id: item.id,
@@ -196,6 +195,25 @@ export class SurveyMemberComponent implements OnInit {
       this.router.navigate(['/surveys', item.id, 'preview'], {
         state: { data: { ...fakeData, status: item.status } },
       });
+    }
+  }
+
+  // [新增] 刪除處理方法
+  openDeleteModal(item: SurveyHistory) {
+    this.targetHistoryItem = item;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.targetHistoryItem = null;
+  }
+
+  confirmDelete() {
+    if (this.targetHistoryItem) {
+      this.allHistories = this.allHistories.filter(h => h.id !== this.targetHistoryItem!.id);
+      this.triggerToast('已成功刪除該筆問卷紀錄');
+      this.closeDeleteModal();
     }
   }
 

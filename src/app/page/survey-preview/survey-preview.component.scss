@@ -227,22 +227,61 @@
     }
 
     .preview-content {
-        background: #fffaf6;
-        padding: 15px 20px;
-        border-radius: 8px;
-        border-left: 4px solid #f0c4a8;
+        padding: 10px 0;
 
-        .answer-text {
-            margin: 0;
-            font-size: 1rem;
-            color: #6d4c41;
-            line-height: 1.6;
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            background: #fff;
+            border: 1.5px solid #f0e0d6;
+            border-radius: 12px;
+            color: #8d6e63;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+
+            i {
+                font-size: 1.1rem;
+                color: #d7ccc8;
+            }
+
+            /* 醒目的選中樣式 */
+            &.is-selected {
+                background: linear-gradient(135deg, #fff2e8 0%, #ffe0d0 100%);
+                border-color: #f4a261;
+                color: #4e342e;
+                font-weight: 800;
+                box-shadow: 0 4px 12px rgba(244, 162, 97, 0.15);
+                opacity: 1;
+                transform: translateY(-2px);
+
+                i {
+                    color: #e76f51;
+                }
+            }
         }
 
         .answer-textarea-view {
-            white-space: pre-wrap;
-            color: #6d4c41;
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            background: #fff;
+            border: 2px dashed #f0c4a8;
+            border-radius: 12px;
+            color: #4e342e;
             font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
         }
     }
 }

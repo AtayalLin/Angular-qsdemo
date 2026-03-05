@@ -571,14 +571,21 @@
     .col-action {
         text-align: right;
         overflow: visible;
+
+        .action-btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            align-items: center;
+        }
     }
 }
 
 /* 按鈕樣式統一 */
 .btn-preview,
-.btn-standard-action {
+.btn-standard-action,
+.btn-delete-history {
     height: 40px;
-    padding: 0 20px;
     border-radius: 10px;
     border: none;
     font-weight: 700;
@@ -587,12 +594,14 @@
     transition: all 0.2s;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
 }
 
 .btn-preview {
     background: #fff2e8;
     color: #e76f51;
+    padding: 0 20px;
 
     &:hover {
         background: #e76f51;
@@ -604,12 +613,80 @@
 .btn-standard-action {
     background: #f4a261;
     color: #fff;
+    padding: 0 20px;
 
     &:hover {
         filter: brightness(1.1);
         box-shadow: 0 5px 15px rgba(244, 162, 97, 0.3);
     }
 }
+
+.btn-delete-history {
+    width: 40px; /* 圓形小按鈕 */
+    background: #fff;
+    color: #b08a74;
+    border: 1.5px solid #f0c4a8;
+
+    &:hover {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fca5a5;
+    }
+}
+
+/* [新增] 刪除確認彈窗樣式 (與列表頁保持一致) */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(109, 76, 65, 0.15); backdrop-filter: blur(12px);
+    display: flex; justify-content: center; align-items: center; z-index: 10000;
+}
+
+.modal-content.delete-modal {
+    background: #fff; padding: 0; border-radius: 28px; width: 90%; max-width: 420px;
+    box-shadow: 0 40px 100px rgba(109, 76, 65, 0.2);
+    animation: modalIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+
+    .modal-header {
+        background: linear-gradient(135deg, #fffaf6, #fff2e8);
+        padding: 25px 30px; border-bottom: 1px solid rgba(240, 196, 168, 0.3);
+        display: flex; justify-content: space-between; align-items: flex-start;
+
+        .header-main {
+            display: flex; gap: 15px; align-items: center;
+            .icon-box.danger {
+                width: 50px; height: 50px; border-radius: 14px; background: #fee2e2;
+                display: flex; align-items: center; justify-content: center;
+                i { font-size: 1.5rem; color: #dc2626; }
+            }
+            .title-text {
+                h2 { font-size: 1.35rem; color: #4e342e; font-weight: 900; margin: 0; }
+                .title-desc { font-size: 0.85rem; color: #b08a74; margin: 2px 0 0; font-weight: 500; }
+            }
+        }
+        .close-x {
+            width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff;
+            color: #e76f51; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+    }
+
+    .modal-body {
+        padding: 30px; text-align: center;
+        .warning-text { font-size: 1rem; color: #4e342e; font-weight: 600; line-height: 1.6; margin-bottom: 10px; 
+                        strong { color: #e76f51; font-weight: 800; } }
+        .sub-hint { font-size: 0.85rem; color: #b08a74; line-height: 1.5; }
+    }
+
+    .modal-footer.horizontal {
+        padding: 0 30px 30px; display: flex; gap: 12px;
+        button { flex: 1; height: 48px; border-radius: 14px; font-weight: 800; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-cancel { background: #fff; color: #b08a74; border: 1.5px solid #f0c4a8; &:hover { background: #fffaf6; } }
+        .btn-confirm-delete { background: #dc2626; color: #fff; &:hover { background: #b91c1c; transform: translateY(-2px); } }
+    }
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(30px); } }
 
 /* 6. [重新設計] 通知彈窗樣式 (Toast) */
 .toast-wrapper {

@@ -154,6 +154,17 @@ export class SurveyService {
         },
       ],
     },
+    {
+      id: 7,
+      title: '【已結束】2025 年度復古遊戲大賞投票',
+      type: '活動',
+      description: '此活動已圓滿結束，感謝各界熱烈參與。',
+      startDate: '2025-01-01',
+      endDate: '2025-01-31',
+      participants: 850,
+      publishStatus: '已發佈',
+      questions: [],
+    },
   ];
 
   importMockDataToDatabase(): Observable<any> {
