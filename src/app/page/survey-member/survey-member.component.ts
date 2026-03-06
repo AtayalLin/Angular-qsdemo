@@ -158,42 +158,60 @@ export class SurveyMemberComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // 從 LocalStorage 載入當前登入者資料
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      this.user = JSON.parse(savedUser);
+      this.editUser = { ...this.user };
+    }
     this.syncSurveysToHistory();
   }
 
   syncSurveysToHistory() {
-    this.surveyService.getSurveys().subscribe((surveys) => {
-      this.allHistories = surveys.map((s, index) => {
-        // 設定模擬狀態：除了第3筆設為 expired (無資料) 外，其餘都有資料
-        let status: 'submitted' | 'draft' | 'expired' = 'submitted';
-        if (index === 0) status = 'draft';
-        if (index === 2) status = 'expired';
+    if (!this.user.email) return;
 
-        return {
-          id: s.id,
-          title: s.title,
-          type: s.type,
-          filledDate: s.startDate,
-          status: status,
-          progress: status === 'draft' ? 65 : undefined,
-          hasData: true, // 全部允許檢視
-        };
-      });
+    this.surveyService.getUserHistory(this.user.email).subscribe({
+      next: (surveys: any[]) => {
+        this.allHistories = surveys.map((s) => {
+          return {
+            id: s.id,
+            title: s.title,
+            type: s.type,
+            filledDate: s.startDate, // 後端 Quiz 的 startDate
+            status: this.determineStatus(s),
+            hasData: true,
+          };
+        });
+      },
+      error: (err) => console.error('撈取歷史紀錄失敗', err)
     });
+  }
+
+  // [新增] 判定問卷狀態
+  private determineStatus(s: any): 'submitted' | 'draft' | 'expired' {
+    const now = new Date();
+    const end = new Date(s.endDate);
+    if (end < now) return 'expired';
+    return 'submitted'; // 預設已送出，若有暫存需求可再擴充
   }
 
   handleAction(item: SurveyHistory) {
     if (item.status === 'draft') {
       this.router.navigate(['/surveys', item.id, 'question']);
     } else {
-      // [關鍵] 取得對應的模擬填答假資料並跳轉，同時帶入 status
-      const fakeData = this.mockAnswersMap[item.id] || {
-        id: item.id,
-        title: item.title,
-        userInfo: this.user,
-      };
-      this.router.navigate(['/surveys', item.id, 'preview'], {
-        state: { data: { ...fakeData, status: item.status } },
+      // 從後端撈取該問卷的詳細填答內容 (feedback)
+      this.surveyService.getFeedback(item.id, this.user.email).subscribe({
+        next: (res: any) => {
+          if (res.code === 200) {
+            // 帶入狀態跳轉預覽頁面
+            this.router.navigate(['/surveys', item.id, 'preview'], {
+              state: { data: { ...res, status: item.status } },
+            });
+          } else {
+            this.triggerToast(res.message || '無法讀取資料');
+          }
+        },
+        error: (err) => this.triggerToast('連線異常，無法檢視紀錄')
       });
     }
   }
@@ -261,8 +279,48 @@ export class SurveyMemberComponent implements OnInit {
     }
   }
   saveProfile() {
-    this.user = { ...this.editUser };
-    this.isEditing = false;
+    this.surveyService.updateUserProfile(this.editUser).subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          this.user = { ...this.editUser };
+          localStorage.setItem('currentUser', JSON.stringify(this.user));
+          this.isEditing = false;
+          this.triggerToast('個人資料已成功儲存');
+        } else {
+          this.triggerToast(res.message || '更新失敗');
+        }
+      },
+      error: (err) => this.triggerToast('連線失敗，請檢查後端')
+    });
+  }
+
+  // [新增] 修改密碼實體邏輯
+  handlePasswordChange() {
+    if (!this.passwordData.current || !this.passwordData.new || !this.passwordData.confirm) {
+      this.triggerToast('請填寫完整密碼欄位');
+      return;
+    }
+    if (this.passwordData.new !== this.passwordData.confirm) {
+      this.triggerToast('新密碼與確認密碼不符');
+      return;
+    }
+
+    this.surveyService.changePassword(
+      this.user.email, 
+      this.passwordData.current, 
+      this.passwordData.new
+    ).subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          this.triggerToast('密碼已成功修改');
+          this.passwordData = { current: '', new: '', confirm: '' };
+          this.isEditing = false;
+        } else {
+          this.triggerToast(res.message || '密碼修改失敗');
+        }
+      },
+      error: (err) => this.triggerToast('連線失敗，無法變更密碼')
+    });
   }
   changeAvatar() {
     const input = document.createElement('input');

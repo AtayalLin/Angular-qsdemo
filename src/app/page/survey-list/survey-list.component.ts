@@ -37,9 +37,31 @@ export class SurveyListComponent implements OnInit {
   // --- 選取邏輯 ---
   selectedIds = new Set<number>();
   isBatchDeleting = false;
-  isManageMode = false; // [新增] 是否開啟管理模式
+  isManageMode = false;
 
-  // ... (其餘邏輯)
+  constructor() {}
+
+  ngOnInit(): void {
+    this.fetchSurveys();
+
+    // 檢查登入狀態持久化
+    const savedLogin = localStorage.getItem('isAdmin');
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedLogin === 'true') {
+      this.isAdmin = true;
+      this.isLoggedIn = true;
+    }
+    if (savedUser) {
+      this.currentUser = JSON.parse(savedUser);
+      this.isLoggedIn = true;
+    }
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['login'] === 'true') {
+        this.openLoginModal();
+      }
+    });
+  }
 
   toggleManageMode() {
     this.isManageMode = !this.isManageMode;
@@ -68,9 +90,10 @@ export class SurveyListComponent implements OnInit {
 
   get pageNumbers(): number[] {
     const windowSize = 10;
-    const startPage =
-      Math.floor((this.currentPage - 1) / windowSize) * windowSize + 1;
-    const endPage = startPage + windowSize - 1;
+    const startPage = Math.floor((this.currentPage - 1) / windowSize) * windowSize + 1;
+    const total = this.actualTotalPages;
+    const endPage = Math.min(startPage + windowSize - 1, total);
+    
     const pages: number[] = [];
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
@@ -79,7 +102,7 @@ export class SurveyListComponent implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.navMaxPage) {
+    if (page >= 1 && page <= this.actualTotalPages) {
       this.currentPage = page;
     }
   }
@@ -107,35 +130,20 @@ export class SurveyListComponent implements OnInit {
     message: '',
   };
 
-  ngOnInit(): void {
-    this.fetchSurveys();
-
-    // 檢查登入狀態持久化
-    const savedLogin = localStorage.getItem('isAdmin');
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedLogin === 'true') {
-      this.isAdmin = true;
-      this.isLoggedIn = true;
-    }
-    if (savedUser) {
-      this.currentUser = JSON.parse(savedUser);
-      this.isLoggedIn = true;
-    }
-
-    this.route.queryParams.subscribe((params) => {
-      if (params['login'] === 'true') {
-        this.openLoginModal();
-      }
-    });
-  }
-
   /**
    * 向 Service 抓取所有問卷資料
    */
   fetchSurveys(): void {
-    this.surveyService.getSurveys().subscribe((list) => {
-      this.surveys = list;
-      this.onSearch();
+    this.surveyService.getSurveys().subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          this.surveys = res.quizList || [];
+          this.onSearch();
+        } else {
+          console.error('抓取問卷失敗', res.message);
+        }
+      },
+      error: (err) => console.error('API 異常', err)
     });
   }
 
@@ -147,7 +155,7 @@ export class SurveyListComponent implements OnInit {
     } else {
       this.selectedIds.clear();
     }
-    this.selectedIds = new Set(this.selectedIds); // 重新賦值觸發偵測
+    this.selectedIds = new Set(this.selectedIds);
   }
 
   toggleSelect(id: number) {
@@ -156,7 +164,7 @@ export class SurveyListComponent implements OnInit {
     } else {
       this.selectedIds.add(id);
     }
-    this.selectedIds = new Set(this.selectedIds); // 重新賦值觸發偵測
+    this.selectedIds = new Set(this.selectedIds);
   }
 
   isAllSelected(): boolean {
@@ -166,25 +174,14 @@ export class SurveyListComponent implements OnInit {
     );
   }
 
-  onImportTestData(): void {
-    if (!confirm('是否將假資料「87世紀遊戲主機」導入 MySQL 資料庫？')) return;
-    this.surveyService.importMockDataToDatabase().subscribe({
-      next: (res: any) => {
-        if (res.code === 200) alert('成功');
-        else alert('失敗');
-      },
-      error: () => alert('連線失敗'),
-    });
-  }
-
   getDisplayStatus(survey: Survey): string {
     const now = new Date();
     const end = new Date(survey.endDate);
-    if (survey.publishStatus === '已發佈' && end < now) {
+    if (survey.published && end < now) {
       return '已過期';
     }
-    if (this.isAdmin) return survey.publishStatus;
-    return survey.publishStatus === '已發佈' ? '已發佈' : '未開放填寫';
+    if (this.isAdmin) return survey.published ? '已發佈' : '未發佈';
+    return survey.published ? '已發佈' : '未開放填寫';
   }
 
   onSearch() {
@@ -193,15 +190,17 @@ export class SurveyListComponent implements OnInit {
     this.filteredSurveys = this.surveys.filter((s) => {
       const matchText = !keyword || s.title.toLowerCase().includes(keyword);
       const matchType = this.searchType === '' || s.type === this.searchType;
-      const matchStatus =
-        this.searchStatus === '' || s.publishStatus === this.searchStatus;
+      
+      const statusText = s.published ? '已發佈' : '未發佈';
+      const matchStatus = this.searchStatus === '' || statusText === this.searchStatus;
+      
       let matchDate = true;
       if (this.startDate)
         matchDate = matchDate && s.startDate >= this.startDate;
       if (this.endDate) matchDate = matchDate && s.endDate <= this.endDate;
       return matchText && matchType && matchStatus && matchDate;
     });
-    this.selectedIds.clear(); // 搜尋後清除選取
+    this.selectedIds.clear();
   }
 
   startSurvey(id: number) {
@@ -230,14 +229,14 @@ export class SurveyListComponent implements OnInit {
 
   publishSurvey(id: number) {
     if (!confirm('確定要發佈嗎？')) return;
+    // 這裡應呼叫 API，暫時模擬狀態變更
     const s = this.surveys.find((x) => x.id === id);
     if (s) {
-      s.publishStatus = '已發佈';
+      s.published = true;
       this.onSearch();
     }
   }
 
-  // 單筆刪除模式
   deleteSurvey(id: number) {
     const s = this.surveys.find((x) => x.id === id);
     if (s) {
@@ -247,7 +246,6 @@ export class SurveyListComponent implements OnInit {
     }
   }
 
-  // 批次刪除模式
   openBatchDeleteModal() {
     if (this.selectedIds.size === 0) return;
     this.isBatchDeleting = true;
@@ -284,7 +282,7 @@ export class SurveyListComponent implements OnInit {
 
   editSurvey(id: number) {
     const s = this.surveys.find((x) => x.id === id);
-    if (s && s.publishStatus === '已發佈') {
+    if (s && s.published) {
       this.targetEditId = id;
       this.showEditModal = true;
     } else {
@@ -316,17 +314,13 @@ export class SurveyListComponent implements OnInit {
     this.currentUser = null;
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('userRole');
     this.showLogoutModal = false;
     this.onSearch();
   }
 
   closeLogoutModal() {
     this.showLogoutModal = false;
-  }
-
-  goToAdmin() {
-    if (this.isAdmin) this.logout();
-    else this.openLoginModal();
   }
 
   openLoginModal() {
@@ -344,47 +338,34 @@ export class SurveyListComponent implements OnInit {
   }
 
   handleLogin() {
-    const ADMIN_CREDENTIALS = {
-      account: 'test@gmail.com',
-      password: '123456789',
-    };
-    if (
-      this.loginForm.account === ADMIN_CREDENTIALS.account &&
-      this.loginForm.password === ADMIN_CREDENTIALS.password
-    ) {
-      const adminUser = {
-        account: ADMIN_CREDENTIALS.account,
-        name: '超級管理員',
-        password: ADMIN_CREDENTIALS.password,
-      };
-      this.isLoggedIn = true;
-      this.isAdmin = true;
-      this.currentUser = adminUser;
-      localStorage.setItem('currentUser', JSON.stringify(adminUser));
-      localStorage.setItem('isAdmin', 'true');
-      this.closeLoginModal();
-      this.onSearch();
+    if (!this.loginForm.account || !this.loginForm.password) {
+      alert('請輸入帳號與密碼');
       return;
     }
-    const users = JSON.parse(localStorage.getItem('survey_users') || '[]');
-    const u = users.find(
-      (x: any) =>
-        x.account === this.loginForm.account &&
-        x.password === this.loginForm.password,
-    );
-    if (u) {
-      this.isLoggedIn = true;
-      this.currentUser = u;
-      localStorage.setItem('currentUser', JSON.stringify(u));
-      if (u.account === ADMIN_CREDENTIALS.account) {
-        this.isAdmin = true;
-        localStorage.setItem('isAdmin', 'true');
+
+    this.surveyService.login(this.loginForm.account, this.loginForm.password).subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          this.isLoggedIn = true;
+          this.isAdmin = res.role === 'admin';
+          this.currentUser = res.user;
+          
+          localStorage.setItem('currentUser', JSON.stringify(res.user));
+          localStorage.setItem('isAdmin', this.isAdmin ? 'true' : 'false');
+          localStorage.setItem('userRole', res.role);
+
+          this.triggerToast('登入成功', `歡迎回來，${res.user.name}`);
+          this.closeLoginModal();
+          this.onSearch();
+        } else {
+          alert(res.message || '帳號或密碼錯誤');
+        }
+      },
+      error: (err) => {
+        console.error('登入 API 異常', err);
+        alert('連線失敗，請檢查後端伺服器');
       }
-      this.closeLoginModal();
-      this.onSearch();
-    } else {
-      alert('帳號或密碼錯誤');
-    }
+    });
   }
 
   forgotPassword() {

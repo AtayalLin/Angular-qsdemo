@@ -33,9 +33,9 @@ export class SurveyQuestionComponent implements OnInit {
 
   // [關鍵屬性] 基本資料動態配置，功用：由管理者設定決定填寫頁面顯示哪些欄位
   basicInfoConfig = {
-    name: true,   // 預設姓名為必填
+    name: true, // 預設姓名為必填
     phone: false,
-    email: false
+    email: false,
   };
 
   /**
@@ -43,7 +43,7 @@ export class SurveyQuestionComponent implements OnInit {
    * 功用：協助 HTML 範本判斷應套用哪種 Grid 佈局類別 (cols-1, cols-2, cols-3)
    */
   get visibleProjectCount(): number {
-    return Object.values(this.basicInfoConfig).filter(v => v).length;
+    return Object.values(this.basicInfoConfig).filter((v) => v).length;
   }
 
   ngOnInit(): void {
@@ -59,7 +59,7 @@ export class SurveyQuestionComponent implements OnInit {
             this.basicInfoConfig = {
               name: true,
               phone: result.id % 2 === 0, // 模擬：偶數問卷需填手機
-              email: result.id === 6      // 模擬：特定問卷需填信箱
+              email: result.id === 6, // 模擬：特定問卷需填信箱
             };
           }
         },
@@ -69,9 +69,35 @@ export class SurveyQuestionComponent implements OnInit {
 
     const navigation = this.router.getCurrentNavigation();
     const previousData = navigation?.extras.state?.['data'];
-    if (previousData && previousData.userInfo) {
-      this.userInfo = previousData.userInfo;
+    if (previousData) {
+      if (previousData.userInfo) {
+        this.userInfo = previousData.userInfo;
+      }
+      // [新增] 恢復先前的答案 (q1, q2, ...)
+      Object.keys(previousData).forEach(key => {
+        if (key.startsWith('q')) {
+          this.answers[key] = previousData[key];
+        }
+      });
     }
+  }
+
+  /**
+   * [新增] 輔助方法：判定選項是否應勾選 (用於從預覽返回時恢復 UI 狀態)
+   */
+  isOptionChecked(questId: number, option: string): boolean {
+    const key = 'q' + questId;
+    const ans = this.answers[key];
+    if (!ans) return false;
+    if (Array.isArray(ans)) return ans.includes(option);
+    return ans === option;
+  }
+
+  /**
+   * [新增] 輔助方法：恢復文本框內容
+   */
+  getTextValue(questId: number): string {
+    return this.answers['q' + questId] || '';
   }
 
   /**
@@ -83,9 +109,18 @@ export class SurveyQuestionComponent implements OnInit {
 
     // [動態驗證]：僅針對管理員要求的欄位進行檢查
     const { name, phone, email } = this.basicInfoConfig;
-    if (name && !this.userInfo.name) { alert('請填寫姓名'); return; }
-    if (phone && !this.userInfo.phone) { alert('請填寫電話'); return; }
-    if (email && !this.userInfo.email) { alert('請填寫信箱'); return; }
+    if (name && !this.userInfo.name) {
+      alert('請填寫姓名');
+      return;
+    }
+    if (phone && !this.userInfo.phone) {
+      alert('請填寫電話');
+      return;
+    }
+    if (email && !this.userInfo.email) {
+      alert('請填寫信箱');
+      return;
+    }
 
     this.tempAnswers = this.collectAnswers();
     this.modalStep = 'confirm';
@@ -103,8 +138,8 @@ export class SurveyQuestionComponent implements OnInit {
     const parentAnswer = this.answers['q' + q.parentId];
 
     // 檢查父題目是否有值 (支援陣列或字串)
-    const hasValue = Array.isArray(parentAnswer) 
-      ? parentAnswer.length > 0 
+    const hasValue = Array.isArray(parentAnswer)
+      ? parentAnswer.length > 0
       : !!parentAnswer && parentAnswer.trim() !== '';
 
     return !hasValue; // 若無值則禁用
@@ -120,26 +155,48 @@ export class SurveyQuestionComponent implements OnInit {
       this.answers[key] = event.target.value;
     } else if (type === 'multiple') {
       // 處理多選：使用 document 原生抓取，因為目前的資料流較為分散
-      this.answers[key] = Array.from(document.querySelectorAll(`input[name="${key}"]:checked`)).map((el: any) => el.value);
+      this.answers[key] = Array.from(
+        document.querySelectorAll(`input[name="${key}"]:checked`),
+      ).map((el: any) => el.value);
     }
   }
 
   finalSubmit() {
     this.isSubmitting = true;
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.modalStep = 'thanks';
-      setTimeout(() => {
-        this.goToPreview();
-      }, 1500);
-    }, 800);
+    const payload = this.collectAnswers();
+
+    this.surveyService.submitFillin(payload).subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
+        if (res.code === 200) {
+          this.modalStep = 'thanks';
+          setTimeout(() => {
+            this.goToPreview();
+          }, 1500);
+        } else {
+          alert(res.message || '提交失敗');
+        }
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('提交 API 異常', err);
+        alert('提交失敗，請檢查網路連線。');
+      },
+    });
   }
 
   goToPreview() {
     this.showModal = false;
     this.surveyService.setUserInfo(this.userInfo);
+    
+    // 建立一個包含 status 的資料包，讓預覽頁知道這是「剛填完」的狀態
+    const previewPayload = {
+      ...this.tempAnswers,
+      status: 'previewing' // 特別標記為預覽中，非唯讀也非歷史紀錄
+    };
+
     this.router.navigate(['/surveys', this.id, 'preview'], {
-      state: { data: this.tempAnswers },
+      state: { data: previewPayload },
     });
   }
 
@@ -155,11 +212,23 @@ export class SurveyQuestionComponent implements OnInit {
     this.surveyData.questions.forEach((q: any) => {
       const inputName = 'q' + q.id;
       if (q.type === 'single') {
-        answers[inputName] = (document.querySelector(`input[name="${inputName}"]:checked`) as HTMLInputElement)?.value || '';
+        answers[inputName] =
+          (
+            document.querySelector(
+              `input[name="${inputName}"]:checked`,
+            ) as HTMLInputElement
+          )?.value || '';
       } else if (q.type === 'multiple') {
-        answers[inputName] = Array.from(document.querySelectorAll(`input[name="${inputName}"]:checked`)).map((el) => (el as HTMLInputElement).value);
+        answers[inputName] = Array.from(
+          document.querySelectorAll(`input[name="${inputName}"]:checked`),
+        ).map((el) => (el as HTMLInputElement).value);
       } else if (q.type === 'text') {
-        answers[inputName] = (document.querySelector(`textarea[name="${inputName}"]`) as HTMLTextAreaElement)?.value || '';
+        answers[inputName] =
+          (
+            document.querySelector(
+              `textarea[name="${inputName}"]`,
+            ) as HTMLTextAreaElement
+          )?.value || '';
       }
     });
     return answers;

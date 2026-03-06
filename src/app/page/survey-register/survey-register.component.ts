@@ -2,17 +2,18 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { SurveyService } from '../../survey.service';
 
 @Component({
   selector: 'app-survey-register',
   standalone: true,
-  // 確保這裡導入了 CommonModule, FormsModule, RouterModule
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './survey-register.component.html',
   styleUrl: './survey-register.component.scss'
 })
 export class SurveyRegisterComponent {
   private router = inject(Router);
+  private surveyService = inject(SurveyService);
 
   showPassword = false;
   showConfirmPassword = false;
@@ -32,29 +33,27 @@ export class SurveyRegisterComponent {
       return;
     }
 
-    // 2. 模擬儲存到 LocalStorage
-    const storedUsers = JSON.parse(localStorage.getItem('survey_users') || '[]');
-    
-    // 檢查帳號是否已存在
-    const isExist = storedUsers.some((u: any) => u.account === this.regData.account);
-    if (isExist) {
-      alert('此帳號已被註冊！');
-      return;
-    }
-
-    // 存入新使用者
+    // 2. 使用 SurveyService 進行註冊
     const newUser = {
-      account: this.regData.account,
+      email: this.regData.account, // 後端通常使用 email 作為帳號
       name: this.regData.name,
       password: this.regData.password
     };
-    storedUsers.push(newUser);
-    localStorage.setItem('survey_users', JSON.stringify(storedUsers));
 
-    alert('註冊成功！將為您跳轉至登入頁面。');
-
-    // 3. 跳轉回首頁，並帶上參數讓首頁自動打開登入 Modal
-    this.router.navigate(['/surveys'], { queryParams: { login: 'true' } });
+    this.surveyService.register(newUser).subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          alert('註冊成功！將為您跳轉至登入頁面。');
+          this.router.navigate(['/surveys'], { queryParams: { login: 'true' } });
+        } else {
+          alert(res.message || '註冊失敗');
+        }
+      },
+      error: (err) => {
+        console.error('註冊 API 異常', err);
+        alert('連線失敗，請確保後端 Eclipse 已啟動。');
+      }
+    });
   }
 
   // 返回列表頁

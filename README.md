@@ -1,88 +1,61 @@
 # QSDemo - 企業級問卷管理系統 (Enterprise Questionnaire System)
 
 ![Angular](https://img.shields.io/badge/Angular-19.0.0-dd0031.svg?style=for-the-badge&logo=angular)
-![SCSS](https://img.shields.io/badge/SCSS-Responsive-hotpink.svg?style=for-the-badge&logo=sass)
-![Status](https://img.shields.io/badge/Status-Stable-success.svg?style=for-the-badge)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F.svg?style=for-the-badge&logo=springboot)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1.svg?style=for-the-badge&logo=mysql)
+![Status](https://img.shields.io/badge/Status-Fully_Integrated-success.svg?style=for-the-badge)
 
-QSDemo 是一個現代化、響應式且具備高度互動性的問卷管理平台。本專案採用 Angular 框架開發，結合了最新的 Glassmorphism 視覺設計風格，提供使用者與管理者流暢的操作體驗。
+QSDemo 是一個現代化、響應式且與後端完全整合的問卷管理平台。本專案前端採用 Angular 19 開發，後端與 Eclipse Spring Boot 及 MySQL 實作了完整的資料同步與調閱機制。
 
 ## 🔗 線上展示 (Live Demo)
-
-您可以透過以下連結即時體驗系統功能：
+您可以透過以下連結即時體驗系統介面：
 > **[前往線上展示 QSDemo Live](https://AtayalLin.github.io/Angular-qsdemo/)**
 
 ---
 
-## 🏗️ 系統功能架構 (System Architecture)
+## 🏗️ 系統全流程架構 (Full Integration Workflow)
 
-### 👑 管理者後台 (Admin Panel)
-- **問卷生命週期管理**：支援草稿、發佈、暫停與永久刪除。
-- **批次管理模式**：一鍵啟動多選模式，配合側邊即時統計面板進行批次刪除。
-- **智慧按鈕網格**：操作區採 2x2 佈局，奇數按鈕自動置中，保持視覺對稱。
-- **動態題目編輯器**：支援單選、多選、開放題，並具備邏輯跳題功能。
+### 1. 管理者：問卷生命週期
+- **動態建立**：支援自訂標題、期間與個資收集開關（姓名/電話/信箱）。
+- **靈活編輯**：支援單選、複選、開放題之動態增刪，並具備「承上題」邏輯設定。
+- **資料儲存**：透過 `POST /quiz/create` 與 `POST /quiz/update` 與 MySQL 同步。
 
-### 👤 會員中心 (Member Dashboard)
-- **帳號安全設定**：可修改個人資料與密碼，整合「隱藏/顯示」眼睛切換功能。
-- **活動紀錄追蹤**：完整列出歷史填答，支援已過期問卷的持續檢視與紀錄移除。
-- **全選項對照顯示**：檢視紀錄時，列出該題「所有」選項並醒目高亮個人答案，方便對照。
+### 2. 一般會員：安全與權限
+- **帳號同步**：實作註冊與登入功能，資料持久化儲存於 MySQL `user` 表。
+- **安全切換**：修改密碼與註冊頁面整合「眼睛」切換功能，保護使用者輸入。
+- **個人資料**：支援即時修改姓名、電話並同步更新至後端。
+
+### 3. 填答與調閱機制
+- **同步填答**：問卷填寫完畢後，透過 `POST /quiz/fillin` 將答案、題號、Email 關聯存入資料庫。
+- **歷史回顧**：會員中心自動根據 Email 撈取 `fillin` 紀錄，顯示「填過哪些問卷」。
+- **全選項預覽**：檢視紀錄時，動態從後端抓取問卷結構，顯示該題「所有」選項並高亮個人答案。
 
 ---
 
-## 🌟 最新功能與優化 (2026.03 Premium Update)
+## 🌟 技術優化亮點 (2026.03 Integration Update)
 
-### 🎨 視覺與介面設計 (UI/UX)
-- **零跑版排版機制**：
-  - **移除橫向捲軸**：優化 Grid 比例與溢出保護，確保在大中小螢幕皆不溢出。
-  - **自動換行保護**：狀態標籤與長標題支援智慧換行，防止字數過多被截斷。
-- **專業級 Toast 系統**：修復定位邏輯，通知不再隨捲動消失，始終固定於視窗右上角。
-- **精緻化彈窗 (Modal)**：
-  - **尺寸優化**：縮減彈窗寬度至 420px，提升視覺精緻度。
-  - **安全邊距**：實作 `max-height` 保護，確保視窗不碰觸螢幕邊緣且支援內部滾動。
-
-### 🚀 核心模組功能升級
-
-#### 1. 填答紀錄檢視 (Answer Record)
-- **全視角對照**：改變以往僅顯示答案的做法，改為顯示該題完整選項庫。
-- **醒目高亮樣式**：個人答案套用橘色漸層、深色邊框與實心圖示，極具辨識度。
-
-#### 2. 問卷大廳 (Survey Hall)
-- **過期狀態優化**：狀態文字更正為「已過期」，並在非管理員點擊時彈出警告提示。
-- **Premium 登入體驗**：加入功能引導圖示、輸入框前綴 Icon 與高質感背景遮罩。
+### 🎨 專業級 UI/UX
+- **零跑版設計**：移除所有橫向捲軸，完美適應各種螢幕解析度。
+- **智能導航**：預覽確認頁面實作「上一步」功能，自動恢復先前的填答狀態，方便修改。
+- **高級毛玻璃**：登入彈窗與 Toast 通知採用精緻的 Glassmorphism 特效。
 
 ---
 
 ## 🛠️ 技術棧 (Tech Stack)
 
-- **Frontend**: Angular 19+ (Standalone Components), SCSS, Chart.js
-- **Backend**: Eclipse (Spring Boot), MySQL (v8.0+)
-- **Security**: BCrypt Password Encoding
-- **Infrastructure**: HttpClient (CORS Enabled)
+- **Frontend**: Angular 19+ (Standalone, HttpClient, Reactive Forms)
+- **Backend**: Java (Eclipse), Spring Boot 3.x
+- **Database**: MySQL 8.x (Table: quiz, questions, fillin, user)
+- **Icons**: FontAwesome 6 (Free)
 
-## 📦 安裝與執行 (Installation)
+## 📦 版本紀錄
 
-```bash
-# 1. 複製專案
-git clone https://github.com/AtayalLin/Angular-qsdemo.git
-
-# 2. 安裝依賴
-npm install
-
-# 3. 啟動開發伺服器
-ng serve
-```
-
-## 📝 版本紀錄
-
-- **v2.4.0 (2026-03-05)**
-  - [Backend] 完成 MySQL 結構優化，新增 `avatar` 與 `join_date` 欄位。
-  - [Backend] 實作 `UserService` 與 `UserDao`：支持加密登入、註冊及個人資料同步更新。
-  - [Backend] 實作 `FillinService`：支持跨表查詢，撈取會員專屬填答歷史紀錄。
-  - [Feat] 準備將前端 `SurveyService` 模擬資料切換為真正的 API 請求。
-
-- **v2.3.0 (2026-03-05)**
-  - [Feat] 實作會員密碼修改功能，整合安全眼睛切換圖示。
-  - [Feat] 優化歷史紀錄檢視模式：顯示完整題目選項並高亮個人答案。
-  - [Fix] 徹底修復列表頁橫向捲軸問題，優化 RWD 斷點表現。
+- **v2.4.0 (2026-03-05) - 核心功能完整版**
+  - [Feat] 實作問卷建立之個資開關同步（Name/Phone/Email）。
+  - [Feat] 修復問卷預覽為「動態渲染」，同步反應後端最新題目結構。
+  - [Feat] 實作填答頁面「上一步」之資料自動恢復邏輯。
+  - [Fix] 修正 API Payload 屬性名稱，對齊 Java `@JsonProperty` 定義。
+  - [Fix] 強化 `SurveyService` 之 API 串接完整度（Create/Update/Fill/History）。
 
 ---
 © 2026 QSDemo Team. All Rights Reserved.

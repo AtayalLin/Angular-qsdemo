@@ -65,6 +65,7 @@
                         <!-- [修正] 透過 for 與 id 建立明確關聯，功用：點擊文字即可選中選項 -->
                         <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
                             <input type="radio" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt" 
+                                [checked]="isOptionChecked(q.id, opt)"
                                 [disabled]="isQuestionDisabled(q)"
                                 (change)="onAnswerChange(q.id, $event, 'single')">
                             <div class="option-box">{{ opt }}</div>
@@ -75,6 +76,7 @@
                         @for (opt of q.options || []; track opt; let optIdx = $index) {
                         <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
                             <input type="checkbox" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt"
+                                [checked]="isOptionChecked(q.id, opt)"
                                 [disabled]="isQuestionDisabled(q)"
                                 (change)="onAnswerChange(q.id, $event, 'multiple')">
                             <div class="option-box">{{ opt }}</div>
@@ -83,6 +85,7 @@
                     }
                     @case ('text') {
                         <textarea class="custom-textarea" [id]="'q' + q.id" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."
+                            [value]="getTextValue(q.id)"
                             [disabled]="isQuestionDisabled(q)"
                             (input)="onAnswerChange(q.id, $event, 'text')"></textarea>
                     }

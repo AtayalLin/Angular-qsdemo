@@ -174,17 +174,18 @@
           </div>
 
           <div class="col action">
-            @if (survey.publishStatus === "已發佈") {
+            @if (getDisplayStatus(survey) === "已發佈") {
               <button class="btn-primary" (click)="startSurvey(survey.id)">
                 <i class="fas fa-pencil-alt"></i> 開始填寫
               </button>
-              <button class="btn-preview" (click)="viewResult(survey.id)">
-                <i class="fas fa-chart-bar"></i> 檢視結果
-              </button>
             }
+            
+            <button class="btn-preview" (click)="viewResult(survey.id)">
+              <i class="fas fa-chart-bar"></i> 檢視結果
+            </button>
 
             @if (isAdmin) {
-              @if (survey.publishStatus !== "已發佈") {
+              @if (!survey.published) {
                 <button class="btn-publish" (click)="publishSurvey(survey.id)">
                   <i class="fas fa-paper-plane"></i> 發佈
                 </button>
@@ -197,9 +198,9 @@
               </button>
             }
 
-            @if (!isAdmin && survey.publishStatus !== "已發佈") {
+            @if (!isAdmin && getDisplayStatus(survey) !== "已發佈") {
               <span style="color: #b08a74; font-size: 0.8rem; font-weight: 700;">
-                <i class="fas fa-lock"></i> 未開放
+                <i class="fas fa-lock"></i> {{ getDisplayStatus(survey) }}
               </span>
             }
           </div>

@@ -130,15 +130,51 @@ export class SurveyAdminComponent implements OnInit {
   backToEdit(): void { this.adminSubStep = 'edit'; }
 
   confirmSave(): void {
+    if (!this.currentSurvey.title) return alert('請填寫問卷標題');
+
+    // [修正] 建構符合 Java CreateReq.java 結構的 Payload
     const payload = {
-      ...this.currentSurvey,
+      id: this.currentSurvey.id,
+      title: this.currentSurvey.title,
+      type: this.currentSurvey.type,
+      description: this.currentSurvey.description,
+      startDate: this.currentSurvey.startDate,
+      endDate: this.currentSurvey.endDate,
+      // 對齊 @JsonProperty("is_published")
+      is_published: true, 
+      // 對齊 @JsonProperty("collectName") 等個資開關
+      collectName: this.basicInfoConfig.name,
+      collectPhone: this.basicInfoConfig.phone,
+      collectEmail: this.basicInfoConfig.email,
+      // 對齊 @JsonProperty("questionsList")
       questionsList: this.questions.map(q => ({
-        ...q,
+        question_id: q.id, // 對應 Java Questions.java 的 question_id
+        question: q.title, // 對應 Java Questions.java 的 question
         type: q.type === 'multi' ? 'multiple' : q.type,
-        options: q.options.join(';')
+        is_required: q.isRequired,
+        options: q.options.join(';'),
+        is_dependent: q.isDependent,
+        parent_id: q.parentId
       }))
     };
-    console.log('--- 序列化 Payload ---', payload);
-    alert('儲存成功！已包含承上題邏輯設定。');
+
+    console.log('--- 傳送至後端 Payload ---', payload);
+
+    // 根據是否有 ID 判定是建立還是更新
+    const request = this.currentSurvey.id ? 
+      this.surveyService.updateSurvey(payload) : 
+      this.surveyService.createSurvey(payload);
+
+    request.subscribe({
+      next: (res: any) => {
+        if (res.code === 200) {
+          alert('問卷已成功儲存至資料庫！');
+          this.router.navigate(['/surveys']);
+        } else {
+          alert(res.message || '儲存失敗');
+        }
+      },
+      error: (err) => alert('連線 Eclipse 失敗，請檢查後端是否啟動')
+    });
   }
 }

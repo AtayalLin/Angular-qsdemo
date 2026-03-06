@@ -49,90 +49,41 @@
   </div>
 
   <div class="question-list">
-    <!-- Q1 (單選) -->
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type single">單選題</span>
-        <h3>Q1：您對此問卷內容的評價是？</h3>
-      </div>
-      <div class="preview-content">
-        <div class="options-container">
-          @for (opt of questionOptions.q1; track opt) {
-            <div class="option-item" [class.is-selected]="isOptionSelected('q1', opt)">
-              <i class="fas" [ngClass]="isOptionSelected('q1', opt) ? 'fa-check-circle' : 'fa-circle'"></i>
-              <span>{{ opt }}</span>
+    <!-- 動態渲染所有題目 (根據 surveyStructure) -->
+    @for (q of surveyStructure?.questionList; track q.question_id; let i = $index) {
+      <div class="question-card">
+        <div class="question-head">
+          <span class="question-type" [ngClass]="q.type">
+            {{ q.type === 'single' ? '單選題' : q.type === 'multi' || q.type === 'multiple' ? '複選題' : '開放題' }}
+          </span>
+          <h3>Q{{ i + 1 }}：{{ q.question }}</h3>
+        </div>
+
+        <div class="preview-content">
+          @if (q.type === 'text') {
+            <!-- 開放題顯示文字 -->
+            <div class="answer-textarea-view">
+              {{ previewData['q' + q.question_id] || "（未填寫內容）" }}
+            </div>
+          } @else {
+            <!-- 單選/複選題顯示所有選項 -->
+            <div class="options-container">
+              @for (opt of q.options?.split(';'); track opt) {
+                <div class="option-item" [class.is-selected]="isOptionSelected(q.question_id, opt)">
+                  <i class="fas" [ngClass]="isOptionSelected(q.question_id, opt) 
+                    ? (q.type === 'single' ? 'fa-check-circle' : 'fa-check-square') 
+                    : (q.type === 'single' ? 'fa-circle' : 'fa-square')"></i>
+                  <span>{{ opt }}</span>
+                </div>
+              }
             </div>
           }
         </div>
       </div>
-    </div>
-
-    <!-- Q2 (複選) -->
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type multiple">複選題</span>
-        <h3>Q2：您的關注點包含？</h3>
-      </div>
-      <div class="preview-content">
-        <div class="options-container">
-          @for (opt of questionOptions.q2; track opt) {
-            <div class="option-item" [class.is-selected]="isOptionSelected('q2', opt)">
-              <i class="fas" [ngClass]="isOptionSelected('q2', opt) ? 'fa-check-square' : 'fa-square'"></i>
-              <span>{{ opt }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Q3 (單選) -->
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type single">單選題</span>
-        <h3>Q3：您是否推薦此服務？</h3>
-      </div>
-      <div class="preview-content">
-        <div class="options-container">
-          @for (opt of questionOptions.q3; track opt) {
-            <div class="option-item" [class.is-selected]="isOptionSelected('q3', opt)">
-              <i class="fas" [ngClass]="isOptionSelected('q3', opt) ? 'fa-check-circle' : 'fa-circle'"></i>
-              <span>{{ opt }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Q4 (複選) -->
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type multiple">複選題</span>
-        <h3>Q4：您的常用時段？</h3>
-      </div>
-      <div class="preview-content">
-        <div class="options-container">
-          @for (opt of questionOptions.q4; track opt) {
-            <div class="option-item" [class.is-selected]="isOptionSelected('q4', opt)">
-              <i class="fas" [ngClass]="isOptionSelected('q4', opt) ? 'fa-check-square' : 'fa-square'"></i>
-              <span>{{ opt }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Q5 (開放題) -->
-    <div class="question-card">
-      <div class="question-head">
-        <span class="question-type text">開放題</span>
-        <h3>Q5：您的具體建議？</h3>
-      </div>
-      <div class="preview-content">
-        <div class="answer-textarea-view">
-          {{ previewData.q5 || "（未填寫內容）" }}
-        </div>
-      </div>
-    </div>
+    } @empty {
+      <!-- 若還沒抓到結構，顯示載入中或預設 -->
+      <div class="loading-questions">正在讀取題目結構...</div>
+    }
 
     <div class="action-footer">
       @if (isReadOnly) {
@@ -141,7 +92,7 @@
         </button>
       } @else {
         <button type="button" class="btn-preview-back" (click)="goBack()">
-          <i class="fas fa-arrow-left"></i> 返回修改
+          <i class="fas fa-arrow-left"></i> 上一步 (修改答案)
         </button>
         <button type="button" class="btn-gaming-submit" (click)="submitSurvey()">
           確認送出問卷 <i class="fas fa-check"></i>

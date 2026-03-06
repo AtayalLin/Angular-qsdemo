@@ -300,14 +300,12 @@
                 border: none;
             }
 
-            .btn-save-profile {
-                background: #4e342e;
-                color: #fff;
-
-                &:hover {
-                    background: #3d2b26;
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 15px rgba(78, 52, 46, 0.2);
+            .btn-save-profile { 
+                background: #4e342e; color: #fff; 
+                &:hover { background: #3d2b26; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(78, 52, 46, 0.2); } 
+                &.secondary { 
+                    background: #f4a261; 
+                    &:hover { background: #e76f51; box-shadow: 0 6px 15px rgba(231, 111, 81, 0.2); }
                 }
             }
 
