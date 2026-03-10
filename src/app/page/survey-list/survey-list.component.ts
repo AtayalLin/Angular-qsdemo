@@ -42,9 +42,9 @@ export class SurveyListComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.fetchSurveys();
+    this.fetchSurveys(); // 初始化載入：元件建立時立即向後端請求問卷清單資料
 
-    // 檢查登入狀態持久化
+    // 檢查登入狀態持久化 - 原理：從 LocalStorage 讀取權限資訊，確保重新整理後登入狀態不遺失
     const savedLogin = localStorage.getItem('isAdmin');
     const savedUser = localStorage.getItem('currentUser');
     if (savedLogin === 'true') {
@@ -75,7 +75,8 @@ export class SurveyListComponent implements OnInit {
     this.selectedIds.clear();
   }
 
-  get paginatedSurveys(): Survey[] {
+  // 分頁切片邏輯 - 原理：根據當前頁碼與每頁筆數，從篩選後的陣列中切出要顯示的部分
+  get paginatedSurveys() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     return this.filteredSurveys.slice(startIndex, startIndex + this.pageSize);
   }
@@ -90,11 +91,10 @@ export class SurveyListComponent implements OnInit {
 
   get pageNumbers(): number[] {
     const windowSize = 10;
-    const startPage =
-      Math.floor((this.currentPage - 1) / windowSize) * windowSize + 1;
+    const startPage = Math.floor((this.currentPage - 1) / windowSize) * windowSize + 1;
     const total = this.actualTotalPages;
     const endPage = Math.min(startPage + windowSize - 1, total);
-
+    
     const pages: number[] = [];
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
@@ -131,44 +131,18 @@ export class SurveyListComponent implements OnInit {
     message: '',
   };
 
-  /**
-   * 初始化問卷清單
-   * 原理：組件啟動時呼叫此方法，從 SurveyService 取得所有問卷資料。
-   * 包含欄位格式化（如日期與發佈狀態），確保前端顯示的一致性。
-   */
+  // 向 Service 抓取所有問卷資料 - 原理：訂閱 Observable 以接收後端回傳的 JSON 列表並存入本地陣列
   fetchSurveys(): void {
     this.surveyService.getSurveys().subscribe({
       next: (res: any) => {
         if (res.code === 200) {
-          // 獲取問卷列表並確保欄位正確對應
-          this.surveys = (res.quizList || []).map((survey: any) => {
-            // 判定發佈狀態 (相容後端回傳的 boolean 或 0/1)
-            const isPublished =
-              survey.published === true ||
-              survey.published === 1 ||
-              survey.is_published === true ||
-              survey.is_published === 1;
-
-            return {
-              ...survey,
-              // 統一欄位名稱，方便後續在 HTML 中讀取
-              published: isPublished,
-              // 如果後端沒給 publishStatus，則根據 boolean 自動轉義為文字狀態
-              publishStatus: survey.publishStatus || (isPublished ? '已發佈' : '草稿'),
-              // 統一日期欄位名稱，避免 backend snake_case 與 frontend camelCase 衝突
-              startDate: survey.startDate || survey.start_date,
-              endDate: survey.endDate || survey.end_date,
-            };
-          });
-          
-          this.onSearch(); // 載入完後執行一次篩選
+          this.surveys = res.quizList || [];
+          this.onSearch(); // 取得資料後立即執行預設搜尋/過濾
         } else {
-          this.triggerToast('錯誤', '無法載入問卷列表');
+          console.error('抓取問卷失敗', res.message);
         }
       },
-      error: (err) => {
-        this.triggerToast('錯誤', '連線異常，請檢查網路');
-      },
+      error: (err) => console.error('API 異常', err)
     });
   }
 
@@ -199,56 +173,41 @@ export class SurveyListComponent implements OnInit {
     );
   }
 
-  getDisplayStatus(survey: Survey | null | undefined): string {
-    if (!survey) return '未知';
+  // 動態判定問卷顯示狀態 - 原理：比對當前系統時間與問卷截止日，結合發佈標記回傳文字描述
+  getDisplayStatus(survey: Survey): string {
     const now = new Date();
-    const endDateStr = survey.endDate || '';
-    const end = new Date(endDateStr);
-    const publishStatus = survey.publishStatus || '未發佈';
-
-    if (publishStatus === '已發佈' && endDateStr && end < now) {
+    const end = new Date(survey.endDate);
+    if (survey.published && end < now) {
       return '已過期';
     }
-    if (this.isAdmin) return publishStatus;
-    return publishStatus === '已發佈' ? '已發佈' : '未開放填寫';
+    if (this.isAdmin) return survey.published ? '已發佈' : '未發佈';
+    return survey.published ? '已發佈' : '未開放填寫';
   }
 
+  // 多重條件搜尋過濾 - 原理：在前端針對標題、類型、狀態與日期範圍對 surveys 陣列進行 filter 篩選
   onSearch() {
-    this.currentPage = 1;
+    this.currentPage = 1; // 搜尋時重置分頁至第一頁
     const keyword = (this.searchText || '').trim().toLowerCase();
-    this.filteredSurveys = this.surveys.filter((s: Survey) => {
+    this.filteredSurveys = this.surveys.filter((s) => {
       const matchText = !keyword || s.title.toLowerCase().includes(keyword);
       const matchType = this.searchType === '' || s.type === this.searchType;
-
-      const matchStatus =
-        this.searchStatus === '' ||
-        (s.publishStatus || '') === this.searchStatus;
-
-      // 修正日期比較邏輯 - 兼容 startDate/start_date 和 endDate/end_date
+      
+      const statusText = s.published ? '已發佈' : '未發佈';
+      const matchStatus = this.searchStatus === '' || statusText === this.searchStatus;
+      
       let matchDate = true;
-      if (this.startDate && (s.startDate || s.start_date)) {
-        const surveyDate = s.startDate || s.start_date || '';
-        matchDate = matchDate && surveyDate >= this.startDate;
-      }
-      if (this.endDate && (s.endDate || s.end_date)) {
-        const surveyDate = s.endDate || s.end_date || '';
-        matchDate = matchDate && surveyDate <= this.endDate;
-      }
+      if (this.startDate)
+        matchDate = matchDate && s.startDate >= this.startDate;
+      if (this.endDate) matchDate = matchDate && s.endDate <= this.endDate;
       return matchText && matchType && matchStatus && matchDate;
     });
     this.selectedIds.clear();
   }
+
+  // 進入填寫問卷頁面 - 原理：檢查權限與效期後，透過 Angular Router 導覽至指定 ID 的題目元件
   startSurvey(id: number) {
     const s = this.surveys.find((x) => x.id === id);
-
-    // 檢查問卷是否已發佈
-    if (!s?.published && !this.isAdmin) {
-      this.triggerToast('無法進入填寫', '此問卷尚未發佈，敬請稍候');
-      return;
-    }
-
-    // 檢查問卷是否過期
-    if (s && s.endDate) {
+    if (s) {
       const now = new Date();
       const end = new Date(s.endDate);
       if (end < now && !this.isAdmin) {
@@ -256,8 +215,6 @@ export class SurveyListComponent implements OnInit {
         return;
       }
     }
-
-    // 進入問卷填寫頁面
     this.router.navigate(['/surveys', id, 'question']);
   }
 
@@ -272,113 +229,17 @@ export class SurveyListComponent implements OnInit {
     }, 3000);
   }
 
+  // 發佈問卷功能 - 原理：調用 Service 變更問卷狀態並通知後端，隨後刷新列表顯示
   publishSurvey(id: number) {
-    const survey = this.surveys.find((x) => x.id === id);
-    if (!survey) {
-      this.triggerToast('錯誤', '無法找到該問卷');
-      return;
-    }
-
-    if (!confirm('確定要發佈此問卷嗎？發佈後使用者即可進行填寫。')) return;
-
-    // 先更新本地狀態 (樂觀更新)
-    const originalStatus = survey.published;
-    survey.published = true;
-    this.onSearch();
-
-    // 調用 API 發佈問卷
+    if (!confirm('確定要發佈嗎？')) return;
     this.surveyService.publishSurvey(id).subscribe({
       next: (res: any) => {
         if (res.code === 200) {
-          this.triggerToast('發佈成功', `問卷「${survey.title}」已開放填寫`);
+          this.triggerToast('發佈成功', '該問卷已對外開放');
           this.fetchSurveys();
-          this.onSearch();
-        } else {
-          // 恢復原狀態
-          survey.published = originalStatus;
-          this.onSearch();
-          this.triggerToast('發佈失敗', res.message || '無法發佈問卷');
         }
       },
-      error: (err) => {
-        console.error('發佈 API 異常 - 詳細信息:', {
-          status: err.status,
-          statusText: err.statusText,
-          message: err.message,
-          errorMessage: err.error?.message,
-          url: err.url,
-          headers: err.headers,
-        });
-        // 恢復原狀態
-        survey.published = originalStatus;
-        this.onSearch();
-
-        // 根據錯誤類型提供更詳細的提示
-        let errorMsg = '發佈過程中發生錯誤';
-        if (err.status === 500) {
-          errorMsg = '伺服器內部錯誤，請檢查後端日誌';
-        } else if (err.status === 404) {
-          errorMsg = '無法找到該端點，可能不存在或位址錯誤';
-        } else if (err.status === 403) {
-          errorMsg = '權限不足，無法發佈';
-        }
-        this.triggerToast('錯誤', errorMsg);
-      },
-    });
-  }
-
-  unpublishSurvey(id: number) {
-    const survey = this.surveys.find((x) => x.id === id);
-    if (!survey) {
-      this.triggerToast('錯誤', '無法找到該問卷');
-      return;
-    }
-
-    if (!confirm('確定要取消發佈此問卷嗎？取消發佈後使用者無法填寫。')) return;
-
-    // 先更新本地狀態 (樂觀更新)
-    const originalStatus = survey.published;
-    survey.published = false;
-    this.onSearch();
-
-    // 調用 API 取消發佈問卷
-    this.surveyService.unpublishSurvey(id).subscribe({
-      next: (res: any) => {
-        if (res.code === 200) {
-          this.triggerToast('取消成功', `問卷「${survey.title}」已關閉填寫`);
-          this.fetchSurveys();
-          this.onSearch();
-        } else {
-          // 恢復原狀態
-          survey.published = originalStatus;
-          this.onSearch();
-          this.triggerToast('取消失敗', res.message || '無法取消發佈問卷');
-        }
-      },
-      error: (err) => {
-        console.error('取消發佈 API 異常 - 詳細信息:', {
-          status: err.status,
-          statusText: err.statusText,
-          message: err.message,
-          errorMessage: err.error?.message,
-          url: err.url,
-          headers: err.headers,
-        });
-        // 恢復原狀態
-        survey.published = originalStatus;
-        this.onSearch();
-
-        // 根據錯誤類型提供更詳細的提示
-        let errorMsg = '取消發佈過程中發生錯誤';
-        if (err.status === 500) {
-          errorMsg = '伺服器內部錯誤，請檢查後端日誌';
-        } else if (err.status === 404) {
-          errorMsg = '無法找到該端點，可能不存在或位址錯誤';
-        } else if (err.status === 403) {
-          errorMsg = '權限不足，無法取消發佈';
-        }
-        this.triggerToast('錯誤', errorMsg);
-      },
+      error: (err) => console.error('發佈失敗', err)
     });
   }
 
@@ -397,43 +258,25 @@ export class SurveyListComponent implements OnInit {
     this.showDeleteModal = true;
   }
 
+  // 執行刪除動作 - 原理：區分單筆與批次刪除，發送請求至後端從資料庫移除對應記錄
   confirmDelete() {
     if (this.isBatchDeleting) {
       const ids = Array.from(this.selectedIds);
       this.surveyService.deleteBatchSurveys(ids).subscribe({
-        next: (res: any) => {
-          if (res.code === 200) {
-            this.triggerToast('刪除成功', `已成功刪除 ${ids.length} 份問卷`);
-            this.selectedIds.clear();
-            this.fetchSurveys();
-            this.closeDeleteModal();
-          } else {
-            this.triggerToast('刪除失敗', res.message || '批次刪除失敗');
-          }
+        next: (res) => {
+          this.selectedIds.clear();
+          this.fetchSurveys();
+          this.closeDeleteModal();
         },
-        error: (err) => {
-          console.error('批次刪除失敗', err);
-          this.triggerToast('錯誤', '批次刪除過程中發生錯誤');
-        },
+        error: (err) => console.error('批次刪除失敗', err),
       });
     } else if (this.targetSurvey) {
       this.surveyService.deleteSingleSurvey(this.targetSurvey.id).subscribe({
-        next: (res: any) => {
-          if (res.code === 200) {
-            this.triggerToast(
-              '刪除成功',
-              `問卷「${this.targetSurvey?.title}」已被刪除`,
-            );
-            this.fetchSurveys();
-            this.closeDeleteModal();
-          } else {
-            this.triggerToast('刪除失敗', res.message || '無法刪除問卷');
-          }
+        next: (res) => {
+          this.fetchSurveys();
+          this.closeDeleteModal();
         },
-        error: (err) => {
-          console.error('單筆刪除失敗', err);
-          this.triggerToast('錯誤', '刪除過程中發生錯誤');
-        },
+        error: (err) => console.error('單筆刪除失敗', err),
       });
     }
   }
@@ -446,53 +289,33 @@ export class SurveyListComponent implements OnInit {
 
   editSurvey(id: number) {
     const s = this.surveys.find((x) => x.id === id);
-    if (s) {
-      this.targetSurvey = { ...s }; // 深拷貝，避免直接修改原始數據
+    if (s && s.published) {
       this.targetEditId = id;
       this.showEditModal = true;
     } else {
-      this.triggerToast('錯誤', '無法找到指定問卷');
+      this.router.navigate(['/admin'], { queryParams: { id: id } });
     }
   }
 
   confirmEdit() {
-    if (this.targetEditId && this.targetSurvey) {
-      // 傳遞完整的問卷資訊到管理中心
-      this.router
-        .navigate(['/admin'], {
-          queryParams: { id: this.targetEditId },
-          state: { survey: this.targetSurvey },
-        })
-        .then((success) => {
-          if (success) {
-            this.closeEditModal();
-            this.triggerToast(
-              '轉跳中',
-              `正在編輯「${this.targetSurvey?.title}」...`,
-            );
-          } else {
-            this.triggerToast('錯誤', '無法跳轉到編輯頁面');
-          }
-        })
-        .catch((err) => {
-          console.error('導航失敗', err);
-          this.triggerToast('錯誤', '跳轉過程中發生錯誤');
-        });
-    } else {
-      this.triggerToast('錯誤', '問卷信息不完整，無法進行編輯');
+    if (this.targetEditId) {
+      this.router.navigate(['/admin'], {
+        queryParams: { id: this.targetEditId },
+      });
+      this.closeEditModal();
     }
   }
 
   closeEditModal() {
     this.showEditModal = false;
     this.targetEditId = null;
-    this.targetSurvey = null; // 清空目標問卷數據
   }
 
   logout() {
     this.showLogoutModal = true;
   }
 
+  // 登出帳號 - 原理：清空 LocalStorage 中的身份憑證並重置全域變數，強制切換為訪客視角
   confirmLogout() {
     this.isAdmin = false;
     this.isLoggedIn = false;
@@ -522,45 +345,25 @@ export class SurveyListComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  /**
-   * 處理使用者登入
-   * 原理：透過 SurveyService 發送帳密至後端驗證。
-   * 包含「測試模式」邏輯：若帳密匹配特定的開發者憑證 (test@gmail.com / 123456789)，
-   * 即使 API 回傳錯誤 (例如後端未啟動)，仍允許以管理員身份進入系統，確保前端功能的展示不受後端狀態限制。
-   */
+  // 處理使用者登入邏輯 - 原理：發送帳密至後端驗證，成功後將角色資訊寫入持久化儲存 (LocalStorage)
   handleLogin() {
-    const { account, password } = this.loginForm;
-    if (!account || !password) {
+    if (!this.loginForm.account || !this.loginForm.password) {
       alert('請輸入帳號與密碼');
       return;
     }
 
-    // 管理員測試帳號邏輯 (開發展示與緊急調錯用)
-    const isTestAdmin =
-      account === 'test@gmail.com' && password === '123456789';
-
-    this.surveyService.login(account, password).subscribe({
+    this.surveyService.login(this.loginForm.account, this.loginForm.password).subscribe({
       next: (res: any) => {
-        // 只要後端驗證通過 (code 200) 或符合硬編碼的測試憑證，皆執行登入程序
-        if (res.code === 200 || isTestAdmin) {
+        if (res.code === 200) {
           this.isLoggedIn = true;
-          this.isAdmin = isTestAdmin || res.role === 'admin';
-          // 優先採用後端回傳的使用者資料，否則使用測試預設值
-          this.currentUser = res.user || {
-            name: '系統管理員',
-            email: 'test@gmail.com',
-            phone: '0900-000-000',
-          };
-
-          // 將登入狀態寫入 LocalStorage 實現持久化，避免重新整理頁面後掉線
-          localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+          this.isAdmin = res.role === 'admin';
+          this.currentUser = res.user;
+          
+          localStorage.setItem('currentUser', JSON.stringify(res.user));
           localStorage.setItem('isAdmin', this.isAdmin ? 'true' : 'false');
-          localStorage.setItem(
-            'userRole',
-            this.isAdmin ? 'admin' : res.role || 'member',
-          );
+          localStorage.setItem('userRole', res.role);
 
-          this.triggerToast('登入成功', `歡迎回來，${this.currentUser.name}`);
+          this.triggerToast('登入成功', `歡迎回來，${res.user.name}`);
           this.closeLoginModal();
           this.onSearch();
         } else {
@@ -568,26 +371,9 @@ export class SurveyListComponent implements OnInit {
         }
       },
       error: (err) => {
-        // [強化] 離線測試模式：若 API 噴錯但帳密符合測試憑證，仍強制登入
-        if (isTestAdmin) {
-          this.isLoggedIn = true;
-          this.isAdmin = true;
-          this.currentUser = {
-            name: '系統管理員(測試模式)',
-            email: 'test@gmail.com',
-            phone: '0900-000-000',
-          };
-          localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-          localStorage.setItem('isAdmin', 'true');
-          localStorage.setItem('userRole', 'admin');
-          this.triggerToast('測試模式', '已使用管理員憑證登入');
-          this.closeLoginModal();
-          this.onSearch();
-        } else {
-          console.error('登入 API 異常', err);
-          alert('連線失敗，請檢查後端伺服器是否啟動');
-        }
-      },
+        console.error('登入 API 異常', err);
+        alert('連線失敗，請檢查後端伺服器');
+      }
     });
   }
 
