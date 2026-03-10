@@ -17,95 +17,118 @@
 }
 
 @if (previewData) {
-<div class="result-page">
-  <section class="survey-header">
-    <div class="preview-badge">{{ isReadOnly ? '填答紀錄' : '預覽確認' }}</div>
-    <h1 class="survey-title">{{ previewData.title || '問卷預覽' }}</h1>
-    <div class="survey-meta">
-      <span>問卷 ID：#{{ previewData.id }}</span>
-      @if (!isReadOnly) {
-        <span class="warning-text">※ 目前為預覽狀態，尚未正式送出</span>
-      } @else {
-        <span class="status-text submitted">狀態：已完成送出</span>
-      }
-    </div>
-  </section>
+  <div class="result-page">
+    <section class="survey-header">
+      <div class="preview-badge">
+        {{ isReadOnly ? "填答紀錄" : "預覽確認" }}
+      </div>
+      <h1 class="survey-title">{{ previewData.title || "問卷預覽" }}</h1>
+      <div class="survey-meta">
+        <span>問卷 ID：#{{ previewData.quizId }}</span>
+        @if (!isReadOnly) {
+          <span class="warning-text">※ 目前為預覽狀態，尚未正式送出</span>
+        } @else {
+          <span class="status-text submitted">狀態：已完成送出</span>
+        }
+      </div>
+    </section>
 
-  <div class="preview-info-banner">
-    <div class="info-group">
-      <div class="info-item">
-        <span class="info-label">姓名</span>
-        <span class="info-value">{{ previewData.userInfo?.name || '未填寫' }}</span>
+    <div class="preview-info-banner">
+      <div class="info-group">
+        <div class="info-item">
+          <span class="info-label">姓名</span>
+          <span class="info-value">{{ previewData.name || "未填寫" }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">電話</span>
+          <span class="info-value">{{ previewData.phone || "未填寫" }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">信箱</span>
+          <span class="info-value">{{ previewData.email || "未填寫" }}</span>
+        </div>
       </div>
-      <div class="info-item">
-        <span class="info-label">電話</span>
-        <span class="info-value">{{ previewData.userInfo?.phone || '未填寫' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">信箱</span>
-        <span class="info-value">{{ previewData.userInfo?.email || '未填寫' }}</span>
+    </div>
+
+    <div class="question-list">
+      <!-- 動態渲染所有題目 (根據 surveyStructure) -->
+      @for (q of surveyStructure?.questions; track q.id; let i = $index) {
+        <div class="question-card">
+          <div class="question-head">
+            <span class="question-type" [ngClass]="q.type">
+              {{
+                q.type === "single"
+                  ? "單選題"
+                  : q.type === "multiple"
+                    ? "複選題"
+                    : "開放題"
+              }}
+            </span>
+            <h3>Q{{ i + 1 }}：{{ q.title }}</h3>
+          </div>
+
+          <div class="preview-content">
+            @if (q.type === "text") {
+              <div class="answer-textarea-view">
+                {{ getTextAnswer(q.id) || "（未填寫內容）" }}
+              </div>
+            } @else {
+              <div class="options-container">
+                @for (opt of q.options; track opt) {
+                  <div
+                    class="option-item"
+                    [class.is-selected]="isOptionSelected(q.id, opt)"
+                  >
+                    <i
+                      class="fas"
+                      [ngClass]="
+                        isOptionSelected(q.id, opt)
+                          ? q.type === 'single'
+                            ? 'fa-check-circle'
+                            : 'fa-check-square'
+                          : q.type === 'single'
+                            ? 'fa-circle'
+                            : 'fa-square'
+                      "
+                    ></i>
+                    <span>{{ opt }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="loading-questions">正在讀取題目結構...</div>
+      }
+
+      <div class="action-footer">
+        @if (isReadOnly) {
+          <button type="button" class="btn-preview-back" (click)="goBack()">
+            <i class="fas fa-reply"></i> 返回會員中心
+          </button>
+        } @else {
+          <button type="button" class="btn-preview-back" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i> 上一步 (修改答案)
+          </button>
+          <button
+            type="button"
+            class="btn-gaming-submit"
+            (click)="submitSurvey()"
+          >
+            確認送出問卷 <i class="fas fa-check"></i>
+          </button>
+        }
       </div>
     </div>
   </div>
-
-  <div class="question-list">
-    <!-- 動態渲染所有題目 (根據 surveyStructure) -->
-    @for (q of surveyStructure?.questionList; track q.question_id; let i = $index) {
-      <div class="question-card">
-        <div class="question-head">
-          <span class="question-type" [ngClass]="q.type">
-            {{ q.type === 'single' ? '單選題' : q.type === 'multi' || q.type === 'multiple' ? '複選題' : '開放題' }}
-          </span>
-          <h3>Q{{ i + 1 }}：{{ q.question }}</h3>
-        </div>
-
-        <div class="preview-content">
-          @if (q.type === 'text') {
-            <!-- 開放題顯示文字 -->
-            <div class="answer-textarea-view">
-              {{ previewData['q' + q.question_id] || "（未填寫內容）" }}
-            </div>
-          } @else {
-            <!-- 單選/複選題顯示所有選項 -->
-            <div class="options-container">
-              @for (opt of q.options?.split(';'); track opt) {
-                <div class="option-item" [class.is-selected]="isOptionSelected(q.question_id, opt)">
-                  <i class="fas" [ngClass]="isOptionSelected(q.question_id, opt) 
-                    ? (q.type === 'single' ? 'fa-check-circle' : 'fa-check-square') 
-                    : (q.type === 'single' ? 'fa-circle' : 'fa-square')"></i>
-                  <span>{{ opt }}</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-    } @empty {
-      <!-- 若還沒抓到結構，顯示載入中或預設 -->
-      <div class="loading-questions">正在讀取題目結構...</div>
-    }
-
-    <div class="action-footer">
-      @if (isReadOnly) {
-        <button type="button" class="btn-preview-back" (click)="goBack()">
-          <i class="fas fa-reply"></i> 返回會員中心
-        </button>
-      } @else {
-        <button type="button" class="btn-preview-back" (click)="goBack()">
-          <i class="fas fa-arrow-left"></i> 上一步 (修改答案)
-        </button>
-        <button type="button" class="btn-gaming-submit" (click)="submitSurvey()">
-          確認送出問卷 <i class="fas fa-check"></i>
-        </button>
-      }
-    </div>
-  </div>
-</div>
 } @else {
   <div class="result-page">
     <section class="survey-header">
       <h1 class="survey-title">無預覽資料</h1>
-      <p style="text-align: center; color: #b08a74; margin-top: 20px;">請確保已從問卷頁面點選「預覽」或從會員中心進入。</p>
+      <p style="text-align: center; color: #b08a74; margin-top: 20px">
+        請確保已從問卷頁面點選「預覽」或從會員中心進入。
+      </p>
     </section>
   </div>
 }

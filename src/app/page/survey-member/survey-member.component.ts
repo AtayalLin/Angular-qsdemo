@@ -170,20 +170,25 @@ export class SurveyMemberComponent implements OnInit {
   syncSurveysToHistory() {
     if (!this.user.email) return;
 
-    this.surveyService.getUserHistory(this.user.email).subscribe({
-      next: (surveys: any[]) => {
-        this.allHistories = surveys.map((s) => {
+    this.surveyService.getUserHistory(this.user.email.trim()).subscribe({
+      next: (res: any) => {
+        // 後端回傳 { code, message, quizList: [...] }
+        const surveys = res.quizList ?? res ?? [];
+        this.allHistories = surveys.map((s: any) => {
           return {
             id: s.id,
             title: s.title,
             type: s.type,
-            filledDate: s.startDate, // 後端 Quiz 的 startDate
+            filledDate: s.startDate ?? s.start_date,
             status: this.determineStatus(s),
             hasData: true,
           };
         });
       },
-      error: (err) => console.error('撈取歷史紀錄失敗', err)
+      error: (err) => {
+        console.error('撈取歷史紀錄失敗', err);
+        this.triggerToast('無法讀取填答紀錄，請稍後再試');
+      },
     });
   }
 
@@ -199,19 +204,26 @@ export class SurveyMemberComponent implements OnInit {
     if (item.status === 'draft') {
       this.router.navigate(['/surveys', item.id, 'question']);
     } else {
-      // 從後端撈取該問卷的詳細填答內容 (feedback)
       this.surveyService.getFeedback(item.id, this.user.email).subscribe({
         next: (res: any) => {
+          console.log('feedback 傳入參數：', item.id, this.user.email);
+          console.log('feedback res：', res); // ✅ 加這行
+          console.log('res.code type：', typeof res.code, res.code); // ✅ 加這行
           if (res.code === 200) {
-            // 帶入狀態跳轉預覽頁面
             this.router.navigate(['/surveys', item.id, 'preview'], {
-              state: { data: { ...res, status: item.status } },
+              state: {
+                data: {
+                  ...res,
+                  quizId: item.id, // ✅ 明確帶入 quizId
+                  status: item.status,
+                },
+              },
             });
           } else {
             this.triggerToast(res.message || '無法讀取資料');
           }
         },
-        error: (err) => this.triggerToast('連線異常，無法檢視紀錄')
+        error: () => this.triggerToast('連線異常，無法檢視紀錄'),
       });
     }
   }
@@ -229,7 +241,9 @@ export class SurveyMemberComponent implements OnInit {
 
   confirmDelete() {
     if (this.targetHistoryItem) {
-      this.allHistories = this.allHistories.filter(h => h.id !== this.targetHistoryItem!.id);
+      this.allHistories = this.allHistories.filter(
+        (h) => h.id !== this.targetHistoryItem!.id,
+      );
       this.triggerToast('已成功刪除該筆問卷紀錄');
       this.closeDeleteModal();
     }
@@ -290,13 +304,17 @@ export class SurveyMemberComponent implements OnInit {
           this.triggerToast(res.message || '更新失敗');
         }
       },
-      error: (err) => this.triggerToast('連線失敗，請檢查後端')
+      error: (err) => this.triggerToast('連線失敗，請檢查後端'),
     });
   }
 
   // [新增] 修改密碼實體邏輯
   handlePasswordChange() {
-    if (!this.passwordData.current || !this.passwordData.new || !this.passwordData.confirm) {
+    if (
+      !this.passwordData.current ||
+      !this.passwordData.new ||
+      !this.passwordData.confirm
+    ) {
       this.triggerToast('請填寫完整密碼欄位');
       return;
     }
@@ -305,22 +323,24 @@ export class SurveyMemberComponent implements OnInit {
       return;
     }
 
-    this.surveyService.changePassword(
-      this.user.email, 
-      this.passwordData.current, 
-      this.passwordData.new
-    ).subscribe({
-      next: (res: any) => {
-        if (res.code === 200) {
-          this.triggerToast('密碼已成功修改');
-          this.passwordData = { current: '', new: '', confirm: '' };
-          this.isEditing = false;
-        } else {
-          this.triggerToast(res.message || '密碼修改失敗');
-        }
-      },
-      error: (err) => this.triggerToast('連線失敗，無法變更密碼')
-    });
+    this.surveyService
+      .changePassword(
+        this.user.email,
+        this.passwordData.current,
+        this.passwordData.new,
+      )
+      .subscribe({
+        next: (res: any) => {
+          if (res.code === 200) {
+            this.triggerToast('密碼已成功修改');
+            this.passwordData = { current: '', new: '', confirm: '' };
+            this.isEditing = false;
+          } else {
+            this.triggerToast(res.message || '密碼修改失敗');
+          }
+        },
+        error: (err) => this.triggerToast('連線失敗，無法變更密碼'),
+      });
   }
   changeAvatar() {
     const input = document.createElement('input');
@@ -329,12 +349,36 @@ export class SurveyMemberComponent implements OnInit {
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
+        // 檢查文件大小 (限制為 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.triggerToast('圖片大小不能超過 5MB');
+          return;
+        }
+
+        // 本地預覽
         const reader = new FileReader();
         reader.onload = (event: any) => {
           this.user.avatar = event.target.result;
           this.editUser.avatar = event.target.result;
         };
         reader.readAsDataURL(file);
+
+        // 上傳至伺服器
+        this.surveyService.uploadAvatar(file, this.user.email).subscribe({
+          next: (res: any) => {
+            if (res.code === 200) {
+              this.triggerToast('頭像已成功上傳');
+              // 更新本地存儲
+              localStorage.setItem('currentUser', JSON.stringify(this.user));
+            } else {
+              this.triggerToast(res.message || '上傳失敗');
+            }
+          },
+          error: (err) => {
+            this.triggerToast('無法上傳頭像，請重試');
+            console.error('Avatar upload failed:', err);
+          },
+        });
       }
     };
     input.click();

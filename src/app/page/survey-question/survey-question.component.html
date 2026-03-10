@@ -1,135 +1,260 @@
-<div class="bg-wave"></div>
+<div class="sq-bg"></div>
 
-@if (surveyData) {
-<div class="result-page">
-    <section class="survey-header">
-        <h1 class="survey-title">{{ surveyData.title }}</h1>
-        <p class="survey-intro">{{ surveyData.description || '請分享您的看法，我們將依據回饋打造更好的體驗。' }}</p>
-        <div class="survey-meta">
-            <span>調查期間：{{ surveyData.startDate }} ～ {{ surveyData.endDate }}</span>
-            <span>問卷 ID：#{{ id }}</span>
+@if (isLoading) {
+  <div class="sq-page sq-loading">
+    <div class="sq-spinner"></div>
+    <p>載入問卷中，請稍候...</p>
+  </div>
+}
+
+@if (!isLoading && loadError) {
+  <div class="sq-page sq-error-box">
+    <div class="sq-error-icon">⚠️</div>
+    <h2>問卷載入失敗</h2>
+    <p>找不到此問卷或網路發生錯誤，請稍後再試。</p>
+    <button class="sq-btn-outline" (click)="goBack()">返回問卷列表</button>
+  </div>
+}
+
+@if (!isLoading && !loadError && surveyData) {
+  <div class="sq-page">
+    <header class="sq-header">
+      <div class="sq-header-badge">問卷調查</div>
+      <h1 class="sq-title">{{ surveyData.title }}</h1>
+      @if (surveyData.description) {
+        <p class="sq-intro">{{ surveyData.description }}</p>
+      }
+      <div class="sq-meta">
+        <span class="sq-meta-item"
+          >📅 {{ surveyData.startDate }} ～ {{ surveyData.endDate }}</span
+        >
+        <span class="sq-meta-item">🆔 問卷編號 #{{ id }}</span>
+        <span class="sq-meta-item"
+          >📋 共 {{ surveyData.questions.length }} 題</span
+        >
+      </div>
+    </header>
+
+    <form class="sq-form" (submit)="onSubmit($event)">
+      <div class="sq-progress-wrap">
+        <div class="sq-progress-label">
+          <span>問卷進度</span>
+          <span>{{ surveyData.questions.length }} 題</span>
         </div>
-    </section>
+        <div class="sq-progress-bar">
+          <div class="sq-progress-fill"></div>
+        </div>
+      </div>
 
-    <form class="question-list" (submit)="onSubmit($event)">
-
-        @if (visibleProjectCount > 0) {
-            <div class="question-card user-info-card">
-                <div class="question-head">
-                    <span class="question-type text">基本資料</span>
-                    <h3>聯絡人資訊</h3>
-                </div>
-
-                <div class="user-info-grid" [ngClass]="'cols-' + visibleProjectCount">
-                    @if (basicInfoConfig.name) {
-                        <div class="input-group">
-                            <label for="userName">姓名 <span class="required">*</span></label>
-                            <input type="text" id="userName" name="userName" [(ngModel)]="userInfo.name" placeholder="請輸入姓名"
-                                class="custom-input" required>
-                        </div>
-                    }
-                    @if (basicInfoConfig.phone) {
-                        <div class="input-group">
-                            <label for="userPhone">電話 <span class="required">*</span></label>
-                            <input type="tel" id="userPhone" name="userPhone" [(ngModel)]="userInfo.phone"
-                                placeholder="0912-345-678" class="custom-input" required>
-                        </div>
-                    }
-                    @if (basicInfoConfig.email) {
-                        <div class="input-group">
-                            <label for="userEmail">信箱 <span class="required">*</span></label>
-                            <input type="email" id="userEmail" name="userEmail" [(ngModel)]="userInfo.email"
-                                placeholder="example@mail.com" class="custom-input" required>
-                        </div>
-                    }
-                </div>
+      @if (visibleProjectCount > 0) {
+        <div class="sq-card sq-card-info">
+          <div class="sq-card-head">
+            <div class="sq-card-head-left">
+              <span class="sq-badge sq-badge-info">基本資料</span>
             </div>
-        }
+          </div>
+          <h3 class="sq-question-title">請填寫聯絡人資訊</h3>
+          <div class="sq-info-grid" [ngClass]="'cols-' + visibleProjectCount">
+            @if (basicInfoConfig.name) {
+              <div class="sq-field">
+                <label class="sq-label"
+                  >姓名 <span class="sq-req">必填</span></label
+                >
+                <input
+                  type="text"
+                  class="sq-input"
+                  [(ngModel)]="userInfo.name"
+                  name="userName"
+                  placeholder="請輸入您的姓名"
+                />
+              </div>
+            }
+            @if (basicInfoConfig.phone) {
+              <div class="sq-field">
+                <label class="sq-label"
+                  >電話 <span class="sq-req">必填</span></label
+                >
+                <input
+                  type="tel"
+                  class="sq-input"
+                  [(ngModel)]="userInfo.phone"
+                  name="userPhone"
+                  placeholder="0912-345-678"
+                />
+              </div>
+            }
+            @if (basicInfoConfig.email) {
+              <div class="sq-field">
+                <label class="sq-label"
+                  >電子郵件 <span class="sq-req">必填</span></label
+                >
+                <input
+                  type="email"
+                  class="sq-input"
+                  [(ngModel)]="userInfo.email"
+                  name="userEmail"
+                  placeholder="example@mail.com"
+                />
+              </div>
+            }
+            @if (basicInfoConfig.requireAge) {
+              <div class="sq-field">
+                <label class="sq-label"
+                  >年齡 <span class="sq-req">必填</span></label
+                >
+                <input
+                  type="number"
+                  class="sq-input"
+                  [(ngModel)]="userInfo.age"
+                  name="userAge"
+                  placeholder="請輸入您的年齡"
+                  min="1"
+                  max="150"
+                />
+              </div>
+            }
+          </div>
+        </div>
+      }
 
-        @for (q of surveyData.questions; track q.id; let i = $index) {
-        <div class="question-card" [class.card-disabled]="isQuestionDisabled(q)">
-            <div class="question-head">
-                <span class="question-type" [ngClass]="q.type">
-                    {{ q.type === 'single' ? '單選題' : q.type === 'multiple' ? '複選題' : '開放題' }}
-                </span>
-                <h3>Q{{ i + 1 }}：{{ q.title }}</h3>
-                @if (isQuestionDisabled(q)) {
-                    <span class="lock-hint"><i class="fas fa-lock"></i> 請先完成關聯題目以解鎖</span>
+      @for (q of surveyData.questions; track q.id; let i = $index) {
+        <div
+          class="sq-card"
+          [class.sq-card-disabled]="isQuestionDisabled(q)"
+          [class.sq-card-required]="q.isRequired"
+        >
+          <div class="sq-card-head">
+            <div class="sq-card-head-left">
+              <span class="sq-q-num">Q{{ i + 1 }}</span>
+              <span
+                class="sq-badge"
+                [class.sq-badge-single]="q.type === 'single'"
+                [class.sq-badge-multi]="q.type === 'multiple'"
+                [class.sq-badge-text]="q.type === 'text'"
+              >
+                {{
+                  q.type === "single"
+                    ? "單選題"
+                    : q.type === "multiple"
+                      ? "複選題"
+                      : "開放題"
+                }}
+              </span>
+              @if (q.isRequired) {
+                <span class="sq-badge sq-badge-req">必填</span>
+              }
+            </div>
+            @if (isQuestionDisabled(q)) {
+              <span class="sq-lock-hint">🔒 請先完成關聯題目</span>
+            }
+          </div>
+
+          <h3 class="sq-question-title">{{ q.title }}</h3>
+
+          <div class="sq-options">
+            @switch (q.type) {
+              @case ("single") {
+                @for (opt of q.options; track opt; let oi = $index) {
+                  <label
+                    class="sq-option"
+                    [class.sq-option-selected]="isOptionChecked(q.id, opt)"
+                    [for]="'q' + q.id + '_' + oi"
+                  >
+                    <input
+                      type="radio"
+                      [id]="'q' + q.id + '_' + oi"
+                      [name]="'q' + q.id"
+                      [value]="opt"
+                      [checked]="isOptionChecked(q.id, opt)"
+                      [disabled]="isQuestionDisabled(q)"
+                      (change)="onAnswerChange(q.id, $event, 'single')"
+                    />
+                    <span class="sq-opt-indicator"></span>
+                    <span class="sq-opt-text">{{ opt }}</span>
+                  </label>
                 }
-            </div>
-
-            <div class="list-layout">
-                @switch (q.type) {
-                    @case ('single') {
-                        @for (opt of q.options || []; track opt; let optIdx = $index) {
-                        <!-- [修正] 透過 for 與 id 建立明確關聯，功用：點擊文字即可選中選項 -->
-                        <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
-                            <input type="radio" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt" 
-                                [checked]="isOptionChecked(q.id, opt)"
-                                [disabled]="isQuestionDisabled(q)"
-                                (change)="onAnswerChange(q.id, $event, 'single')">
-                            <div class="option-box">{{ opt }}</div>
-                        </label>
-                        }
-                    }
-                    @case ('multiple') {
-                        @for (opt of q.options || []; track opt; let optIdx = $index) {
-                        <label class="custom-option" [for]="'q' + q.id + '_' + optIdx">
-                            <input type="checkbox" [id]="'q' + q.id + '_' + optIdx" [name]="'q' + q.id" [value]="opt"
-                                [checked]="isOptionChecked(q.id, opt)"
-                                [disabled]="isQuestionDisabled(q)"
-                                (change)="onAnswerChange(q.id, $event, 'multiple')">
-                            <div class="option-box">{{ opt }}</div>
-                        </label>
-                        }
-                    }
-                    @case ('text') {
-                        <textarea class="custom-textarea" [id]="'q' + q.id" [name]="'q' + q.id" placeholder="請在此分享您的寶貴想法..."
-                            [value]="getTextValue(q.id)"
-                            [disabled]="isQuestionDisabled(q)"
-                            (input)="onAnswerChange(q.id, $event, 'text')"></textarea>
-                    }
+              }
+              @case ("multiple") {
+                @for (opt of q.options; track opt; let oi = $index) {
+                  <label
+                    class="sq-option sq-option-check"
+                    [class.sq-option-selected]="isOptionChecked(q.id, opt)"
+                    [for]="'q' + q.id + '_' + oi"
+                  >
+                    <input
+                      type="checkbox"
+                      [id]="'q' + q.id + '_' + oi"
+                      [name]="'q' + q.id"
+                      [value]="opt"
+                      [checked]="isOptionChecked(q.id, opt)"
+                      [disabled]="isQuestionDisabled(q)"
+                      (change)="onAnswerChange(q.id, $event, 'multiple')"
+                    />
+                    <span class="sq-opt-indicator"></span>
+                    <span class="sq-opt-text">{{ opt }}</span>
+                  </label>
                 }
-            </div>
+              }
+              @case ("text") {
+                <textarea
+                  class="sq-textarea"
+                  [name]="'q' + q.id"
+                  placeholder="請在此分享您的想法..."
+                  [value]="getTextValue(q.id)"
+                  [disabled]="isQuestionDisabled(q)"
+                  (input)="onAnswerChange(q.id, $event, 'text')"
+                ></textarea>
+              }
+            }
+          </div>
         </div>
-        }
+      }
 
-        <div class="action-footer">
-            <button type="button" class="btn-outline" (click)="goBack()">返回列表</button>
-            <button type="submit" class="btn-gaming-submit" [disabled]="isSubmitting">
-                {{ isSubmitting ? '進入預覽頁面...' : '送出問卷並預覽' }}
-            </button>
-        </div>
+      <div class="sq-footer">
+        <button type="button" class="sq-btn-outline" (click)="goBack()">
+          ← 返回列表
+        </button>
+        <button type="submit" class="sq-btn-submit" [disabled]="isSubmitting">
+          {{ isSubmitting ? "處理中..." : "預覽並送出 →" }}
+        </button>
+      </div>
     </form>
-</div>
-} @else {
-<div class="result-page loading-box">
-    <h1 class="survey-title">載入問卷中...</h1>
-</div>
+  </div>
 }
 
 @if (showModal) {
-<div class="modal-overlay">
+  <div class="sq-modal-overlay">
     @switch (modalStep) {
-        @case ('confirm') {
-        <div class="gaming-modal">
-            <div class="modal-icon">📝</div>
-            <p class="modal-text">即將送出問卷，<br>確定內容填寫無誤嗎？</p>
-            <div class="modal-actions">
-                <button class="btn-modal-secondary" (click)="showModal = false">檢查一下</button>
-                <button class="btn-modal-primary" (click)="finalSubmit()" [disabled]="isSubmitting">
-                    {{ isSubmitting ? '傳送中...' : '確認送出' }}
-                </button>
-            </div>
+      @case ("confirm") {
+        <div class="sq-modal">
+          <div class="sq-modal-icon">📝</div>
+          <h3 class="sq-modal-title">確認送出問卷</h3>
+          <p class="sq-modal-desc">
+            請確認所有題目已填寫完畢，<br />送出後將進到預覽頁面。
+          </p>
+          <div class="sq-modal-actions">
+            <button class="sq-btn-outline-dark" (click)="showModal = false">
+              再檢查一下
+            </button>
+            <button
+              class="sq-btn-submit"
+              (click)="finalSubmit()"
+              [disabled]="isSubmitting"
+            >
+              {{ isSubmitting ? "傳送中..." : "確認送出" }}
+            </button>
+          </div>
         </div>
-        }
-        @case ('thanks') {
-        <div class="gaming-modal modal-animate-in">
-            <div class="modal-icon">🎉</div>
-            <p class="modal-text thanks-header">感謝填寫問卷 !!</p>
-            <p class="modal-subtext">我們已收到您的寶貴建議。<br>正在為您開啟預覽頁面...</p>
+      }
+      @case ("thanks") {
+        <div class="sq-modal">
+          <div class="sq-modal-icon">🎉</div>
+          <h3 class="sq-modal-title sq-thanks-title">感謝填寫！</h3>
+          <p class="sq-modal-desc">
+            已收到資料並建立預覽頁面，<br />現在正在開啟預覽頁面...
+          </p>
         </div>
-        }
+      }
     }
-</div>
+  </div>
 }

@@ -12,33 +12,69 @@ import { SurveyService } from '../../survey.service';
 })
 export class SurveyPreviewComponent implements OnInit {
   previewData: any;
-  surveyStructure: any; // 存儲問卷的完整結構 (含題目與所有選項)
+  surveyStructure: any;
   showToast = false;
   toastMsg = '';
   isReadOnly = false;
 
-  constructor(private router: Router, private surveyService: SurveyService) {}
+  constructor(
+    private router: Router,
+    private surveyService: SurveyService,
+  ) {}
 
   ngOnInit(): void {
     const navigation = window.history.state;
     if (navigation && navigation.data) {
       this.previewData = navigation.data;
-      
-      // 1. 判定是否為唯讀模式 (從會員中心進入)
-      if (this.previewData.status === 'submitted' || this.previewData.status === 'expired') {
+      console.log('answerVoList：', this.previewData?.answerVoList);
+      console.log('previewData 完整內容：', this.previewData); // ✅ 除錯用
+
+      if (
+        this.previewData.status === 'submitted' ||
+        this.previewData.status === 'expired'
+      ) {
         this.isReadOnly = true;
       }
 
-      // 2. 獲取問卷結構 (為了得知所有題目與選項)
-      const quizId = this.previewData.id || this.previewData.quizId;
+      const quizId = this.previewData.quizId ?? this.previewData.id; // ✅ quizId 優先
+      console.log('預覽頁 quizId：', quizId); // ✅ 除錯用
+
       if (quizId) {
-        this.surveyService.getSurveyById(Number(quizId)).subscribe({
-          next: (res: any) => {
-            // 假設後端回傳結構為 { quiz: { ... }, questionsList: [...] }
-            // 我們將其格式化為前端習慣的結構
-            this.surveyStructure = res;
-          },
-          error: (err) => console.error('預覽模式獲取結構失敗', err)
+        this.surveyService.getSurveys().subscribe((allRes: any) => {
+          console.log('preview getSurveys 回傳：', allRes); // ✅ 除錯用
+          const allQuizzes = allRes?.quizList ?? [];
+          const qz = allQuizzes.find((q: any) => q.id === Number(quizId));
+          console.log('找到的 qz：', qz); // ✅ 除錯用
+
+          this.surveyService.getSurveyById(Number(quizId)).subscribe({
+            next: (res: any) => {
+              console.log('preview getSurveyById 回傳：', res); // ✅ 除錯用
+              const questionList = res?.questionList ?? [];
+              this.surveyStructure = {
+                id: qz?.id ?? quizId,
+                title: qz?.title ?? '問卷預覽',
+                description: qz?.intro ?? qz?.description ?? '',
+                questions: questionList.map((q: any) => ({
+                  id: q.question_id ?? q.id,
+                  title: q.question ?? q.title,
+                  type:
+                    q.type === 'multiple' || q.type === 'multi'
+                      ? 'multiple'
+                      : q.type === 'single'
+                        ? 'single'
+                        : 'text',
+                  options: q.options
+                    ? q.options
+                        .split(';')
+                        .map((o: string) => o.trim())
+                        .filter(Boolean)
+                    : [],
+                })),
+              };
+              console.log('surveyStructure 組好了：', this.surveyStructure); // ✅ 除錯用
+            },
+            error: (err) => console.error('預覽模式獲取結構失敗', err),
+          });
         });
       }
     }
@@ -48,47 +84,82 @@ export class SurveyPreviewComponent implements OnInit {
     }
   }
 
-  /**
-   * 動態判斷選項是否被選中
-   */
   isOptionSelected(questId: number, option: string): boolean {
     if (!this.previewData) return false;
+
+    // 優先從 q1, q2... 格式找
     const key = 'q' + questId;
-    const answer = this.previewData[key];
-    
-    if (answer === undefined || answer === null || answer === '') return false;
-    
-    // A. 處理陣列 (來自填寫頁面的多選題)
-    if (Array.isArray(answer)) {
-      return answer.some(a => String(a).trim() === option.trim());
+    const directAnswer = this.previewData[key];
+    if (
+      directAnswer !== undefined &&
+      directAnswer !== null &&
+      directAnswer !== ''
+    ) {
+      return this.matchAnswer(directAnswer, option);
     }
 
-    // B. 處理字串 (來自後端或模擬資料)
+    // 從 answerVoList 找
+    const answerVoList: any[] = this.previewData?.answerVoList ?? [];
+    const vo = answerVoList.find(
+      (a: any) => (a.question?.question_id ?? a.question?.id) === questId,
+    );
+    if (!vo) return false;
+
+    return this.matchAnswer(vo.answer, option);
+  }
+
+  private matchAnswer(answer: any, option: string): boolean {
+    if (answer === undefined || answer === null || answer === '') return false;
+    if (Array.isArray(answer)) {
+      return answer.some((a) => String(a).trim() === option.trim());
+    }
     if (typeof answer === 'string') {
       if (answer.includes(';')) {
-        return answer.split(';').map(s => s.trim()).includes(option.trim());
+        return answer
+          .split(';')
+          .map((s) => s.trim())
+          .includes(option.trim());
       }
       return answer.trim() === option.trim();
     }
-    
     return String(answer).trim() === option.trim();
+  }
+
+  getTextAnswer(questId: number): string {
+    const key = 'q' + questId;
+    if (this.previewData?.[key]) return this.previewData[key];
+
+    const answerVoList: any[] = this.previewData?.answerVoList ?? [];
+    const vo = answerVoList.find(
+      (a: any) => (a.question?.question_id ?? a.question?.id) === questId,
+    );
+    return vo?.answer ?? '';
+  }
+
+  triggerToast(msg: string) {
+    this.toastMsg = msg;
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 2500);
   }
 
   goBack() {
     if (this.isReadOnly) {
       this.router.navigate(['/member']);
     } else {
-      // 修正：明確將當前答案帶回填寫頁，確保「上一步」後答案不會消失
-      this.router.navigate(['/surveys', this.previewData.id, 'question'], {
-        state: { data: this.previewData }
+      const quizId = this.previewData?.quizId ?? this.previewData?.id;
+      this.router.navigate(['/surveys', quizId, 'question'], {
+        state: { data: this.previewData },
       });
     }
   }
 
+  isSubmitting = false;
   submitSurvey() {
-    if (this.isReadOnly) return;
-    
-    // 正式提交填答至後端
+    if (this.isReadOnly || this.isSubmitting) return;
+    this.isSubmitting = true;
+
     this.surveyService.submitFillin(this.previewData).subscribe({
       next: (res: any) => {
         if (res.code === 200) {
@@ -98,7 +169,7 @@ export class SurveyPreviewComponent implements OnInit {
           alert(res.message || '送出失敗');
         }
       },
-      error: (err) => alert('連線異常，請稍後再試')
+      error: (err) => alert('連線異常，請稍後再試'),
     });
   }
 }

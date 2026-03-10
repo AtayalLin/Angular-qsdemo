@@ -1,68 +1,87 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { SurveyService } from '../../survey.service';
 
 @Component({
   selector: 'app-survey-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './survey-register.component.html',
-  styleUrl: './survey-register.component.scss'
+  styleUrl: './survey-register.component.scss',
 })
 export class SurveyRegisterComponent {
-  private router = inject(Router);
-  private surveyService = inject(SurveyService);
-
-  showPassword = false;
-  showConfirmPassword = false;
-  // 表單資料模型
   regData = {
     account: '',
     name: '',
+    age: null as number | null,
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '',
   };
 
-  // 執行註冊邏輯
-  onRegister() {
-    // 1. 基本密碼一致性檢查
+  showPassword = false;
+  showConfirmPassword = false;
+  isSubmitting = false;
+
+  constructor(
+    private router: Router,
+    private surveyService: SurveyService,
+  ) {}
+
+  onRegister(): void {
+    if (
+      !this.regData.account ||
+      !this.regData.name ||
+      !this.regData.password ||
+      !this.regData.age
+    ) {
+      alert('請填寫所有必填欄位');
+      return;
+    }
     if (this.regData.password !== this.regData.confirmPassword) {
-      alert('兩次輸入的密碼不一致！');
+      alert('兩次密碼輸入不一致');
+      return;
+    }
+    if (this.regData.age < 18) {
+      alert('年齡必須滿 18 歲');
       return;
     }
 
-    // 2. 使用 SurveyService 進行註冊
-    const newUser = {
-      email: this.regData.account, // 後端通常使用 email 作為帳號
+    this.isSubmitting = true;
+
+    const payload = {
+      email: this.regData.account,
       name: this.regData.name,
-      password: this.regData.password
+      password: this.regData.password,
+      phone: this.regData.phone ?? '',
+      age: this.regData.age,
     };
 
-    this.surveyService.register(newUser).subscribe({
+    this.surveyService.register(payload).subscribe({
       next: (res: any) => {
+        this.isSubmitting = false;
         if (res.code === 200) {
-          alert('註冊成功！將為您跳轉至登入頁面。');
-          this.router.navigate(['/surveys'], { queryParams: { login: 'true' } });
+          alert('註冊成功！請登入');
+          this.router.navigate(['/login']);
         } else {
-          alert(res.message || '註冊失敗');
+          alert(res.message || '註冊失敗，請稍後再試');
         }
       },
       error: (err) => {
-        console.error('註冊 API 異常', err);
-        alert('連線失敗，請確保後端 Eclipse 已啟動。');
-      }
+        this.isSubmitting = false;
+        console.error('註冊失敗', err);
+        alert('伺服器錯誤，請稍後再試');
+      },
     });
   }
 
-  // 返回列表頁
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/surveys']);
   }
 
-  // 直接開啟登入（其實也是回到首頁並帶參數）
-  goToLogin() {
-    this.router.navigate(['/surveys'], { queryParams: { login: 'true' } });
+  goToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }
